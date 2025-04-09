@@ -5,37 +5,9 @@ import ProdutoPizza from "./componentes/Produtopizza";
 import TextInput from "./componentes/TextInput";
 import Header from "./componentes/header";
 import Carrinho from "./componentes/Carrinho";
+import pizzas from "./data/produtopizza";
 export default function Home() {
-  const pizzas = [
-    {
-      id: 1,
-      nome: "Pizza Margherita",
-      preco: 45.90,
-      imagem: "/pizzas/margherita.jpg", // Substitua pelos caminhos reais das imagens
-      descricao: "Molho de tomate, mussarela, manjericão fresco e azeite de oliva"
-    },
-    {
-      id: 2,
-      nome: "Pizza Portuguesa",
-      preco: 52.90,
-      imagem: "/pizzas/portuguesa.jpg",
-      descricao: "Molho de tomate, presunto, ovos, cebola, azeitonas, ervilha e queijo mussarela"
-    },
-    {
-      id: 3,
-      nome: "Pizza Calabresa",
-      preco: 47.90,
-      imagem: "/pizzas/calabresa.jpg",
-      descricao: "Molho de tomate, linguiça calabresa, cebola e queijo mussarela"
-    },
-    {
-      id: 4,
-      nome: "Pizza Quatro Queijos",
-      preco: 54.90,
-      imagem: "/pizzas/quatro-queijos.jpg",
-      descricao: "Molho de tomate, mussarela, provolone, gorgonzola e parmesão"
-    }
-  ];
+
 
 
 
