@@ -43,7 +43,9 @@ export default function Header() {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <h1 className="font-bold text-xl text-gray-800">
-            Web Pizza
+           <Link href="/">
+           Web Pizza
+           </Link>
           </h1>
 
           {/* Botão do menu hamburger (visível apenas em mobile) */}
@@ -88,6 +90,9 @@ export default function Header() {
                 <span>Registrar</span>
               </Button>
             </Link>
+           <Link
+           href="/carrinho"
+           >
             <Button
               color="bg-orange-500"
               className="px-4 py-2 text-white rounded-md flex items-center"
@@ -95,6 +100,7 @@ export default function Header() {
               <ShoppingCart size={18} className="mr-1" />
               <span>Carrinho</span>
             </Button>
+           </Link>
           </div>
         </div>
 
