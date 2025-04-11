@@ -1,12 +1,7 @@
-'use client'
+'use client';
 import { useState, useEffect } from 'react';
 import { ItemCarrinho } from './Produtopizza';
-
-// Interface para o evento personalizado
-interface CarrinhoAtualizadoEvent extends Event {
-  detail: { carrinho: ItemCarrinho[] };
-}
-
+import Link from "next/link";
 export default function Carrinho() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [itens, setItens] = useState<ItemCarrinho[]>([]);
@@ -14,39 +9,39 @@ export default function Carrinho() {
 
   // Carregar itens do carrinho ao montar o componente
   useEffect(() => {
-    // Carregar do localStorage
     const carregarCarrinho = () => {
       const carrinhoSalvo: ItemCarrinho[] = JSON.parse(localStorage.getItem('carrinho') || '[]');
       setItens(carrinhoSalvo);
       calcularTotal(carrinhoSalvo);
+      console.log("Carrinho carregado:", carrinhoSalvo);
     };
+
 
     // Carregar inicialmente
     carregarCarrinho();
 
     // Adicionar listener para atualizações do carrinho
-    const handleCarrinhoAtualizado = (e: Event) => {
-      const customEvent = e as CarrinhoAtualizadoEvent;
-      if (customEvent.detail && customEvent.detail.carrinho) {
-        setItens(customEvent.detail.carrinho);
-        calcularTotal(customEvent.detail.carrinho);
+    const handleCarrinhoAtualizado = (e: CustomEvent<{ carrinho: ItemCarrinho[] }>) => {
+      if (e.detail && e.detail.carrinho) {
+        setItens(e.detail.carrinho);
+        calcularTotal(e.detail.carrinho);
+        console.log("Carrinho atualizado:", e.detail.carrinho);
       }
     };
 
-    window.addEventListener('carrinhoAtualizado', handleCarrinhoAtualizado);
+    window.addEventListener('carrinhoAtualizado', handleCarrinhoAtualizado as EventListener);
 
     // Limpar listener
     return () => {
-      window.removeEventListener('carrinhoAtualizado', handleCarrinhoAtualizado);
+      window.removeEventListener('carrinhoAtualizado', handleCarrinhoAtualizado as EventListener);
     };
   }, []);
 
   // Calcular o total do carrinho
   const calcularTotal = (itensCarrinho: ItemCarrinho[]): void => {
-    const novoTotal = itensCarrinho.reduce((acc, item) => {
-      return acc + (item.preco * item.quantidade);
-    }, 0);
+    const novoTotal = itensCarrinho.reduce((acc, item) => acc + item.preco * item.quantidade, 0);
     setTotal(novoTotal);
+    console.log("Total calculado:", novoTotal);
   };
 
   // Remover item do carrinho
@@ -56,24 +51,32 @@ export default function Carrinho() {
     setItens(novosItens);
     localStorage.setItem('carrinho', JSON.stringify(novosItens));
     calcularTotal(novosItens);
+
+    // Disparar evento para atualizar outros componentes
+    window.dispatchEvent(new CustomEvent('carrinhoAtualizado', { detail: { carrinho: novosItens } }));
   };
 
   // Alterar quantidade de um item
   const alterarQuantidade = (index: number, novaQuantidade: number): void => {
+    // Impedir que a quantidade seja menor que 1
     if (novaQuantidade < 1) return;
-    
+  
     const novosItens = [...itens];
+    const precoUnitario = novosItens[index].preco / novosItens[index].quantidade; // Calcular o preço unitário
     novosItens[index].quantidade = novaQuantidade;
+    novosItens[index].preco = precoUnitario * novaQuantidade; // Recalcular o preço total com base na nova quantidade
+  
     setItens(novosItens);
     localStorage.setItem('carrinho', JSON.stringify(novosItens));
     calcularTotal(novosItens);
+  
+    // Disparar evento para atualizar outros componentes
+    window.dispatchEvent(new CustomEvent('carrinhoAtualizado', { detail: { carrinho: novosItens } }));
   };
 
   // Finalizar pedido
   const finalizarPedido = (): void => {
-    alert('Pedido finalizado! Total: R$ ' + total.toFixed(2));
-    // Aqui você poderia integrar com uma API de pagamentos ou redirecionar para checkout
-    // Por enquanto, apenas limpa o carrinho
+    //alert('Pedido finalizado! Total: R$ ' + total.toFixed(2));
     setItens([]);
     localStorage.setItem('carrinho', JSON.stringify([]));
     setTotal(0);
@@ -114,16 +117,7 @@ export default function Carrinho() {
           <div className="flex-grow overflow-y-auto p-4">
             {itens.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
                 <p className="text-center">Seu carrinho está vazio</p>
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="mt-4 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors"
-                >
-                  Continuar Comprando
-                </button>
               </div>
             ) : (
               <ul className="space-y-4">
@@ -142,7 +136,7 @@ export default function Carrinho() {
                       <div className="flex-grow">
                         <h4 className="font-medium text-gray-800">{item.nome}</h4>
                         <p className="text-sm text-gray-600">Tamanho: {item.tamanho}</p>
-                        <p className="text-sm font-medium text-gray-800">R$ {item.preco.toFixed(2)}</p>
+                        <p className="text-sm font-medium text-gray-800">R$ {item.preco.toFixed(2.00)}</p>
                       </div>
                     </div>
                     
@@ -185,12 +179,17 @@ export default function Carrinho() {
                 <span className="font-bold text-gray-800">Total:</span>
                 <span className="font-bold text-gray-800">R$ {total.toFixed(2)}</span>
               </div>
-              <button 
+              <Link
+              href='carrinho.html'
+              >
+
+<button 
                 onClick={finalizarPedido}
                 className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-bold"
               >
                 Finalizar Pedido
               </button>
+              </Link>
             </div>
           )}
         </div>

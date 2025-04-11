@@ -25,7 +25,7 @@ export default function Home() {
               key={pizza.id}
               id={pizza.id}
               nome={pizza.nome}
-              preco={pizza.preco}
+              tamanhos={pizza.tamanhos}
               imagem={pizza.imagem}
               descricao={pizza.descricao}
             />

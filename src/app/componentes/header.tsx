@@ -123,7 +123,7 @@ export default function Header() {
             
             {/* Botões para mobile */}
             <div className="flex flex-col space-y-2">
-              <Link href="/login" className="w-full">
+              <Link href="/login.html" className="w-full">
                 <Button
                   color="bg-orange-500"
                   className="w-full px-4 py-2 text-white rounded-md flex items-center justify-center"
@@ -132,7 +132,8 @@ export default function Header() {
                   <span>Entrar</span>
                 </Button>
               </Link>
-              <Link href="/register" className="w-full">
+              <Link href="/register.html" className="w-full">
+              
                 <Button
                   color="bg-gray-900"
                   className="w-full px-4 py-2 text-white rounded-md flex items-center justify-center"
@@ -141,13 +142,18 @@ export default function Header() {
                   <span>Registrar</span>
                 </Button>
               </Link>
-              <Button
+              <Link
+              href="/carrinho.html"
+              >
+<Button
                 color="bg-orange-500"
                 className="px-4 py-2 text-white rounded-md flex items-center justify-center"
               >
                 <ShoppingCart size={18} className="mr-2" />
                 <span>Carrinho</span>
               </Button>
+              </Link>
+              
             </div>
           </div>
         </div>

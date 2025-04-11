@@ -281,7 +281,7 @@ export default function Carrinho() {
                         placeholder="Digite seu nome completo"
                         value={dadosEntrega.nome}
                         onChange={handleInputChange}
-                        className="w-full mt-1"
+                        className="w-full mt-1 text-white"
                       />
                     </div>
                     
@@ -295,7 +295,7 @@ export default function Carrinho() {
                           placeholder="seu@email.com"
                           value={dadosEntrega.email}
                           onChange={handleInputChange}
-                          className="w-full mt-1"
+                          className="w-full mt-1 text-white"
                         />
                       </div>
                       <div>
@@ -307,7 +307,7 @@ export default function Carrinho() {
                           placeholder="(00) 00000-0000"
                           value={dadosEntrega.telefone}
                           onChange={handleInputChange}
-                          className="w-full mt-1"
+                          className="w-full mt-1 text-white"
                         />
                       </div>
                     </div>
@@ -321,7 +321,7 @@ export default function Carrinho() {
                         placeholder="000.000.000-00"
                         value={dadosEntrega.cpf}
                         onChange={handleInputChange}
-                        className="w-full mt-1"
+                        className="w-full mt-1 text-white"
                       />
                     </div>
                     
@@ -336,7 +336,7 @@ export default function Carrinho() {
                         placeholder="Nome da rua ou avenida"
                         value={dadosEntrega.endereco}
                         onChange={handleInputChange}
-                        className="w-full mt-1"
+                        className="w-full mt-1 text-white"
                       />
                     </div>
                     
@@ -350,7 +350,7 @@ export default function Carrinho() {
                           placeholder="123"
                           value={dadosEntrega.numero}
                           onChange={handleInputChange}
-                          className="w-full mt-1"
+                          className="w-full mt-1 text-white"
                         />
                       </div>
                       <div>
@@ -362,7 +362,7 @@ export default function Carrinho() {
                           placeholder="Apt, bloco, referência (opcional)"
                           value={dadosEntrega.complemento}
                           onChange={handleInputChange}
-                          className="w-full mt-1"
+                          className="w-full mt-1 text-white"
                         />
                       </div>
                     </div>
@@ -377,7 +377,7 @@ export default function Carrinho() {
                           placeholder="Nome do bairro"
                           value={dadosEntrega.bairro}
                           onChange={handleInputChange}
-                          className="w-full mt-1"
+                          className="w-full mt-1 text-white"
                         />
                       </div>
                       <div>
@@ -389,7 +389,7 @@ export default function Carrinho() {
                           placeholder="Nome da cidade"
                           value={dadosEntrega.cidade}
                           onChange={handleInputChange}
-                          className="w-full mt-1"
+                          className="w-full mt-1 text-white"
                         />
                       </div>
                     </div>
