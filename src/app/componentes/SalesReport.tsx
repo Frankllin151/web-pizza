@@ -34,8 +34,13 @@ export default function SalesReport({ pedidos }: { pedidos: Pedido[] }) {
   // Calcular total de vendas
   const totalVendas = pedidosFiltrados.reduce((total, pedido) => {
     const pizza = pizzas.find(p => p.id === pedido.pizzaId);
-    return total + (pizza ? pizza.preco * pedido.quantidade : 0);
+    // Usando o tamanho médio ('m') como padrão
+    return total + (pizza ? pizza.tamanhos.m * pedido.quantidade : 0);
   }, 0);
+  const pizza = pizzas
+  console.log(pizza);
+  
+
   
   // Contar pedidos por status
   const pedidosPorStatus = {

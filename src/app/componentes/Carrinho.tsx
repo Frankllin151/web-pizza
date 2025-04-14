@@ -77,10 +77,9 @@ export default function Carrinho() {
   // Finalizar pedido
   const finalizarPedido = (): void => {
     //alert('Pedido finalizado! Total: R$ ' + total.toFixed(2));
-    setItens([]);
-    localStorage.setItem('carrinho', JSON.stringify([]));
-    setTotal(0);
-    setIsOpen(false);
+    
+  
+   
   };
 
   return (
