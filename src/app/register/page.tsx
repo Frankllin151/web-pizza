@@ -14,6 +14,18 @@ export default function RegisterPage() {
           <div className="flex justify-center">
             <div>
             <div>
+              <InputLabel htmlFor="name">
+             Nome
+              <TextInput
+              type="name"
+              id="name"
+              placeholder="Digite seu Nome"
+              className="w-full m-1"
+              name="name"
+              />
+              </InputLabel> <br />
+            </div>
+            <div>
             <InputLabel htmlFor="email">Email</InputLabel> <br />
             <TextInput
               type="email"
