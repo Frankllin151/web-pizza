@@ -369,13 +369,69 @@ export default function Carrinho() {
                     ))}
                   </div>
                   
-                  {metodoPagamento === "dinheiro" && 
-                 <div className="bg-[#2D2D30] p-4 rounded-md mb-6">
-                 <p className="text-white text-sm">
-                  Após a entrega efetue o pagamento
-                 </p>
-               </div>
-                  }
+                  {metodoPagamento === "cartao" && 
+  <div className="bg-[#2D2D30] p-4 rounded-md mb-6">
+    <p className="text-white text-sm mb-4">
+      Insira os dados do cartão para processar o pagamento.
+    </p>
+
+    {/* Inputs para pagamento via cartão */}
+    <div className="space-y-4">
+      <div>
+        <InputLabel htmlFor="nomeCartao">Nome no Cartão</InputLabel>
+        <TextInput
+          id="nomeCartao"
+          name="nomeCartao"
+          type="text"
+          placeholder="Digite o nome como está no cartão"
+          value={dadosEntrega.nomeCartao || ''}
+          onChange={handleInputChange}
+          className="w-full mt-1 text-white"
+        />
+      </div>
+
+      <div>
+        <InputLabel htmlFor="numeroCartao">Número do Cartão</InputLabel>
+        <TextInput
+          id="numeroCartao"
+          name="numeroCartao"
+          type="text"
+          placeholder="0000 0000 0000 0000"
+          value={dadosEntrega.numeroCartao || ''}
+          onChange={handleInputChange}
+          className="w-full mt-1 text-white"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <InputLabel htmlFor="validadeCartao">Validade</InputLabel>
+          <TextInput
+            id="validadeCartao"
+            name="validadeCartao"
+            type="text"
+            placeholder="MM/AA"
+            value={dadosEntrega.validadeCartao || ''}
+            onChange={handleInputChange}
+            className="w-full mt-1 text-white"
+          />
+        </div>
+        <div>
+          <InputLabel htmlFor="cvv">CVV</InputLabel>
+          <TextInput
+            id="cvv"
+            name="cvv"
+            type="text"
+            placeholder="123"
+            value={dadosEntrega.cvv || ''}
+            onChange={handleInputChange}
+            className="w-full mt-1 text-white"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+}
                   
                   {metodoPagamento === 'pix' && (
                     <div className="bg-[#2D2D30] p-4 rounded-md mb-6">
