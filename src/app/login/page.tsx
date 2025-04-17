@@ -1,8 +1,29 @@
+"use client"
 import Button from "../componentes/Button";
 import InputLabel from "../componentes/InputLabel";
 import TextInput from "../componentes/TextInput";
+import { useForm } from "react-hook-form";
+import { loginSchema , LoginFormInputs} from "../type/LoginFormInputs";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function LoginPage() {
+
+ const {
+  register, 
+  handleSubmit ,
+  formState: {errors}, 
+ } = useForm<LoginFormInputs>({
+  resolver:zodResolver(loginSchema)
+ })
+ const onSubmit = (data: LoginFormInputs) => {
+  console.log(`Email: ${data.email} 
+ Senha: ${data.password}     
+checkbox: ${data.remember}   
+ `);
+  
+ }
+
+
   return (
     <div className="flex justify-center items-center h-screen w-screen bg-gray-100">
     <div
@@ -10,7 +31,7 @@ export default function LoginPage() {
       p-6 w-[400px]"
     >
       <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
-      <form className="space-y-4">
+      <form className="space-y-4"  onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-center">
           <div>
           <div>
@@ -18,20 +39,26 @@ export default function LoginPage() {
           <TextInput
             type="email"
             placeholder="Digite seu email"
-            name="email"
             id="email"
+            {...register("email")}
             className="w-full mt-1"
           />
+          {errors.email && (
+             <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          )}
         </div>
         <div>
           <InputLabel htmlFor="password">Senha</InputLabel> <br />
           <TextInput
             type="password"
             placeholder="Digite sua senha"
-            name="password"
             id="password"
             className="w-full mt-1"
+            {...register("password")}
           />
+          {errors.password && (
+            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+          )}
         </div>
           </div>
           
@@ -41,7 +68,7 @@ export default function LoginPage() {
     <input
       type="checkbox"
       id="remember"
-      name="remember"
+      {...register("remember")}
       className="sr-only peer focus:outline-none"
     />
     <div
