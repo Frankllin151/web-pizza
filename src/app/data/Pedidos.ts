@@ -12,36 +12,36 @@ export const pedidos: Pedido[] = [
   {
     id: 1,
     cliente: "João Silva",
-    pizzaId: 20,
+    pizzaId: 1, // Corrigido para corresponder ao ID da Pizza Margherita
     quantidade: 2,
-    tamanho: 'm', // Adicionado o tamanho
+    tamanho: 'm',
     status: "recebido",
     data: new Date("2025-04-09T14:30:00"),
   },
   {
     id: 2,
     cliente: "Maria Oliveira",
-    pizzaId: 21,
+    pizzaId: 2, // Corrigido para corresponder ao ID da Pizza Portuguesa
     quantidade: 1,
-    tamanho: 'g', // Adicionado o tamanho
+    tamanho: 'g',
     status: "em preparo",
     data: new Date("2025-04-09T14:45:00"),
   },
   {
     id: 3,
     cliente: "Carlos Santos",
-    pizzaId: 22,
-    quantidade: 3,
-    tamanho: 'p', // Adicionado o tamanho
+    pizzaId: 3, // Corrigido para corresponder ao ID da Pizza Calabresa
+    quantidade: 1,
+    tamanho: 'p',
     status: "pronto",
-    data: new Date("2025-04-09T13:20:00"),
+    data: new Date(),
   },
   {
     id: 4,
     cliente: "Ana Costa",
-    pizzaId: 20,
+    pizzaId: 4, // Corrigido para corresponder ao ID da Pizza Quatro Queijos
     quantidade: 1,
-    tamanho: 'gg', // Adicionado o tamanho
+    tamanho: 'gg',
     status: "entregue",
     data: new Date("2025-04-09T12:15:00"),
   },

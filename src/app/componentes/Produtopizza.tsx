@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-
+import { ItemCarrinho } from '../type/ItemCarrinho';
 // Definir interfaces para as props e outros tipos
 interface ProdutoPizzaProps {
   id: number;
@@ -14,16 +14,6 @@ interface ProdutoPizzaProps {
   imagem?: string; // Opcional
   descricao: string;
   onCarrinhoAtualizado?: (carrinho: ItemCarrinho[]) => void; // Callback para atualizar o carrinho
-}
-
-// Interface para os itens do carrinho
-export interface ItemCarrinho {
-  id: number;
-  nome: string;
-  preco: number // Preço total (baseado no tamanho selecionado)
-  tamanho: 'p' | 'm' | 'g' | 'gg'; // Tamanho selecionado
-  quantidade: number; // Quantidade do item
-  imagem?: string; // URL da imagem da pizza (opcional)
 }
 
 export default function ProdutoPizza({

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { ItemCarrinho } from '../componentes/Produtopizza';
+import { ItemCarrinho } from '../type/ItemCarrinho';
 import Header from '../componentes/header';
 
 // Interfaces para tipagem

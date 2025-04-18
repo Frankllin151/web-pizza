@@ -1,8 +1,7 @@
 "use client"
 import { useState } from 'react';
 import  pizzas  from '../data/produtopizza';
-import { Pedido } from '../data/Pedidos';
-
+import { Pedido} from '../data/Pedidos';
 export default function SalesReport({ pedidos }: { pedidos: Pedido[] }) {
   const [periodoFiltro, setPeriodoFiltro] = useState('hoje');
 
@@ -33,12 +32,17 @@ export default function SalesReport({ pedidos }: { pedidos: Pedido[] }) {
   
   // Calcular total de vendas
   const totalVendas = pedidosFiltrados.reduce((total, pedido) => {
-    const pizza = pizzas.find(p => p.id === pedido.pizzaId);
+    const pizza = pizzas.find(pizza => pizza.id === pedido.pizzaId);
     // Usando o tamanho médio ('m') como padrão
+    
+    
     return total + (pizza ? pizza.tamanhos.m * pedido.quantidade : 0);
   }, 0);
-  const pizza = pizzas
-  console.log(pizza);
+
+
+
+  
+  
   
 
   

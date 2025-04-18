@@ -1,3 +1,4 @@
+// Interface para item dos carrinhos
 export interface ItemCarrinho {
     id: number; // ID da pizza
     nome: string; // Nome da pizza

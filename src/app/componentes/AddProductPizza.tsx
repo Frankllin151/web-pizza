@@ -2,25 +2,8 @@ import React, { useState } from 'react';
 import Button from './Button';
 import TextInput from './TextInput';
 import InputLabel from './InputLabel';
-
-// Interface para os tamanhos de pizza e seus preços
-interface PizzaSize {
-  size: string;
-  price: number;
-}
-
-// Interface para o componente de adicionar pizza
-interface AddPizzaProps {
-  onSubmit: (pizzaData: PizzaFormData) => void;
-}
-
-// Interface para os dados do formulário
-interface PizzaFormData {
-  name: string;
-  description: string;
-  sizes: PizzaSize[];
-  image: File | null;
-}
+import { PizzaFormData } from '../type/dashboard/PizzaFormData';
+import { AddPizzaProps } from '../type/dashboard/AddPizzaProps';
 
 const AddPizzaComponent: React.FC<AddPizzaProps> = ({ onSubmit }) => {
   // Estado inicial do formulário

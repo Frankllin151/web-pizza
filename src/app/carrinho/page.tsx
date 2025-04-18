@@ -4,7 +4,7 @@ import Header from "../componentes/header";
 import InputLabel from "../componentes/InputLabel";
 import TextInput from "../componentes/TextInput";
 import Button from "../componentes/Button";
-import { ItemCarrinho } from '../componentes/Produtopizza';
+import { ItemCarrinho } from '../type/ItemCarrinho';
 import ItensCarrinho from '../componentes/carrinho/ItensCarrinho';
 import DadosEntrega from '../componentes/carrinho/DadosEnrega';
 // Interface para o evento personalizado

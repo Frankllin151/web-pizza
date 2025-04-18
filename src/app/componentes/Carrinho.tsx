@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ItemCarrinho } from './Produtopizza';
+import { ItemCarrinho } from '../type/ItemCarrinho';
 import Link from "next/link";
 export default function Carrinho() {
   const [isOpen, setIsOpen] = useState<boolean>(false);

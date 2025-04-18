@@ -1,5 +1,5 @@
 import Button from "../Button";
-import { ItemCarrinho } from "../Produtopizza";
+import { ItemCarrinho } from "@/app/type/ItemCarrinho";
 
 // Interface para as props do componente
 interface ItensCarrinhoProps {
