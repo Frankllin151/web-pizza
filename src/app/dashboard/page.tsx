@@ -1,11 +1,8 @@
 "use client";
-import { Pedido, pedidos } from '../data/Pedidos';
-import { Pizza } from '../data/produtopizza';
 import { useState } from 'react';
 import Sidebar from '../componentes/Sidebar';
 import { OverviewSection, OrdersSection, ProductsSection , ReportsSection, AddProductNew } from '../componentes/Sidebar';
-import Image from 'next/image';
-import Link from 'next/link';
+
 
 export default function Dashboard() {
   // Estado para controlar qual seção está ativa
