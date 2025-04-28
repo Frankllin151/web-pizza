@@ -23,6 +23,7 @@ interface DadosEntrega {
   complemento: string;
   bairro: string;
   cidade: string;
+
 }
 
 // Métodos de pagamento
@@ -36,7 +37,7 @@ export default function Carrinho() {
   const [itens, setItens] = useState<ItemCarrinho[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [etapaAtual, setEtapaAtual] = useState<number>(1);
-  const [metodoPagamento, setMetodoPagamento] = useState<string>('dinheiro');
+  const [metodoPagamento, setMetodoPagamento] = useState<string>('pix');
   const [dadosEntrega, setDadosEntrega] = useState<DadosEntrega>({
     nome: '',
     email: '',
@@ -46,7 +47,8 @@ export default function Carrinho() {
     numero: '',
     complemento: '',
     bairro: '',
-    cidade: ''
+    cidade: '',
+    
   });
 
   // Carregar itens do carrinho ao montar o componente
@@ -253,6 +255,14 @@ export default function Carrinho() {
                   <div className='bg-[#2D2D30] p-4 rounded-md mb-6'>
                     <p className='text-white text-sm'>
                       Após cofirmar verificar no seu email
+                    </p>
+                  </div>
+                  }
+
+                  {metodoPagamento === "dinheiro" && 
+                  <div className='bg-[#2D2D30] p-4 rounded-md mb-6'>
+                    <p className='text-white text-sm'>
+                      Efetuar o pagamento na entrega
                     </p>
                   </div>
                   }

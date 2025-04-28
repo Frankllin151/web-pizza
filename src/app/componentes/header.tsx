@@ -2,12 +2,25 @@
 import { useState, useEffect } from "react";
 import Button from "./Button";
 import TextInput from "./TextInput";
-import { Menu, ShoppingCart, User, UserPlus } from "lucide-react";
+import { Menu,X, ShoppingCart, User, UserPlus } from "lucide-react";
 import Link from "next/link";
 
-export default function Header() {
+type HeaderProps = {
+  onFiltroChange?: (valor: string) => void; // "?" => opcional
+};
+
+export default function Header({ onFiltroChange }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+const [filtro ,  SetFiltro] = useState("");
+
+
+const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (onFiltroChange) {
+    onFiltroChange(e.target.value);
+  }
+};
+
 
   // Detecta se a tela é mobile
   useEffect(() => {
@@ -54,16 +67,18 @@ export default function Header() {
             className="md:hidden focus:outline-none"
             aria-label="Menu"
           >
-            <Menu 
-              size={28} 
-              className={`text-gray-800 transition-transform duration-300 ${isOpen ? 'rotate-90' : 'rotate-0'}`} 
-            />
+           {isOpen ? (
+    <X size={28} className="text-gray-800 transition-transform duration-300" />
+  ) : (
+    <Menu size={28} className="text-gray-800 transition-transform duration-300" />
+  )}
           </button>
 
           {/* Barra de pesquisa (visível apenas em desktop) */}
           <div className="hidden md:block flex-1 mx-6">
             <TextInput
               type="text"
+              onChange={handleFiltro}
               name="search"
               placeholder="Pesquisar pizzas..."
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -114,6 +129,7 @@ export default function Header() {
             {/* Barra de pesquisa para mobile */}
             <div className="mb-4">
               <TextInput
+              onChange={handleFiltro}
                 type="text"
                 name="search"
                 placeholder="Pesquisar pizzas..."
