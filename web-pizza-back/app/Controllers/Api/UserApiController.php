@@ -34,8 +34,6 @@ class UserApiController extends BaseController
       $this->vaLidar($body, $response);
       $email = $this->userModel->findByEmail($body["email"]);
       if($email === false){
-        $token = bin2hex(random_bytes(16));
-        $body["token"] = $token;
         $body["senha"] = password_hash($body["senha"], PASSWORD_DEFAULT);
 
 
@@ -46,13 +44,13 @@ class UserApiController extends BaseController
           ]);
         }
         $response->json([
-          "flash" => "Usuário criado com sucesso: " . $create
+          "flash" => "Usuário criado com sucesso: ir para tela de login" . $create
         ]);
 
         exit;
       } else if(is_array($email)){
         $response->json([
-          "flash" => "Esse email já existem",
+          "flash" => "Esse email já existem: Messagem de alerta",
           "email"  => $body["email"]
         ]);
         exit;
@@ -69,6 +67,52 @@ class UserApiController extends BaseController
      }
     }
     
-   
+ public function dasHboard(Request $request, Response $response)
+ {
+  $user = $request->getBearerToken();
+
+  return $response->json([
+  $user
+]);
+
+exit;
+ }
+
+
+ public function login(Request $request, Response $response)
+ {
+ $data = $request->getBody();
+  
+ $email = $data["email"] ?? null; 
+ $password = $data["senha"] ?? null;
+
+ if(!$email || !$password){
+  return $response->json(['error' => 'Email e senha são obrigatórios.'], 400);
+  exit;
+ }
+
+ $user = $this->userModel->authenticate($email, $password);
+
+ if (!$user) {
+  return $response->json(['error' => 'Credenciais inválidas.'], 401);
+  exit;
+}
+
+ // Gera token simples (pode usar UUID, random_bytes etc.)
+ $token = bin2hex(random_bytes(32));
+
+ // Salva token no banco
+ $this->userModel->update($user[0]['id'], ['token' => $token]);
+
+ // Remove a senha antes de responder
+ unset($user[0]['senha']);
+ $request->user = $user;
+ return $response->json([
+     'message' => 'Login realizado com sucesso.',
+     'user' => $request->user,
+     'token' => $token
+ ]);
+
+}
 
     }

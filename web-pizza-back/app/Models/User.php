@@ -23,20 +23,23 @@ class User extends BaseModel {
     {
         return $this->findOneWhere('email = :email', [':email' => $email]);
     }
-
-    public function authenticate(string $email, string $password): array|false
+    public function findUser(string $email): array|false
     {
-        $user = $this->findByEmail($email);
+        return $this->findWhere("email = :email", [":email" => $email]);
+    }
+
+    public function authenticate(string $email, string $password)//: array|false
+    {
+        $user = $this->findUser($email);
         
-        if (!$user) {
-            return false;
-        }
-        
-        if (password_verify($password, $user['password'])) {
-            return $user;
-        }
-        
+       if(!$user){
         return false;
+       }
+
+       if(password_verify($password, $user[0]["senha"])){
+        return $user;
+       }
+      return false;
     }
  /**
      * Sobrescreve o método create para adicionar timestamps

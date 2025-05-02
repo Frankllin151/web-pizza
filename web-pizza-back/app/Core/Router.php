@@ -124,7 +124,7 @@ class Router
         if (!$routeFound) {
            
             $this->response->setStatusCode(404);
-            echo "Página não encontrada";
+            //echo "Página não encontrada";
             return;
         }
     
@@ -133,7 +133,7 @@ class Router
         $this->request->setParams($params);
     
         foreach ($routeInfo['middlewares'] as $middleware) {
-            print_r("Resolvendo middleware: $middleware<br>");
+        
             $middlewareInstance = $this->resolveMiddleware($middleware);
             $middlewareInstance->handle($this->request, $this->response, function() {});
         }
