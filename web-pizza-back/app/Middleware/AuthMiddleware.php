@@ -14,10 +14,10 @@ class AuthMiddleware implements MiddlewareInterface
      */
     public function handle(Request $request, Response $response, callable $next)
     {
-        $token = $request->getBearerToken();
-
+       
+        $token = $request->getBearerToken(); 
         if (!$token) {
-            $response->json(['error' => 'Não autorizado. Token não fornecido.' .  $token], 401);
+            $response->json(['error' => "Não autorizado. Token não fornecido."], 401);
             exit;
         }
 

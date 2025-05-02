@@ -69,7 +69,7 @@ class UserApiController extends BaseController
     
  public function dasHboard(Request $request, Response $response)
  {
-  $user = $request->getBearerToken();
+  $user = $request->user;
 
   return $response->json([
   $user

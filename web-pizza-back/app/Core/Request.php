@@ -88,16 +88,40 @@ class Request
     }
     
     public function getBearerToken(): ?string
-{
-    if (is_array($this->user) && isset($this->user["token"])) {
-        return $this->user["token"];
+    {
+        $headers = $this->getAuthorizationHeader();
+        
+        if (!empty($headers)) {
+            if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
+                return $matches[1];
+            }
+        }
+        
+        return null;
     }
 
-    // If $this->user is null or the token doesn't exist, return null
+private function getAuthorizationHeader(): ?string
+{
+    if (isset($_SERVER['Authorization'])) {
+        return trim($_SERVER['Authorization']);
+    }
+
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        return trim($_SERVER['HTTP_AUTHORIZATION']);
+    }
+
+    if (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+
+        foreach ($requestHeaders as $key => $value) {
+            if (strtolower($key) === 'authorization') {
+                return trim($value);
+            }
+        }
+    }
+
     return null;
 }
-
-    
 
 
 }
