@@ -6,6 +6,8 @@ use App\Controllers\BaseController;
 use App\Models\User;
 use App\Core\Request;
 use App\Core\Response;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class UserApiController extends BaseController
 {
@@ -114,5 +116,38 @@ exit;
  ]);
 
 }
+public function forGetPassword(Request $request , Response $response)
+{
+ $data = $request->getBody();
 
+ $mail = new PHPMailer(true);
+ 
+ try{
+  $mail->isSMTP();
+  $mail->Host = $_ENV["HOST_SMTP"]; // ou smtp.gmail.com, etc.
+  $mail->SMTPAuth = true;
+  $mail->Username = $_ENV["USER_NAME_SMTP"];
+  $mail->Password = $_ENV['PASSWORD_SMTP'];
+  $mail->Port = $_ENV["PORT_SMTP"];
+
+  $mail->setFrom($_ENV["EMAIL_SMTP"] , "Web-pizza");
+  $mail->addAddress($data["email"]);
+
+  $mail->isHTML(true); // ⚠️ ATIVAR HTML
+  $mail->Subject = 'Esquece minha senha Web-pizza';
+  
+  $mail->Body = file_get_contents(APP_ROOT . "/app/Views/email/forget.html");
+  
+  $mail->AltBody = 'Este é o conteúdo alternativo para e-mail que não suportam HTML.';
+
+  $mail->send();
+  $response->json([
+    "success" => "Verificar na caixa do email" . APP_ROOT
+  ]);
+ } catch (Exception $e){
+  $response->json([
+    "error" => 'Email não enviado!' . $e],  401);
+ }
+
+}
     }

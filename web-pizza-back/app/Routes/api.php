@@ -21,7 +21,7 @@ $router->get("/api", function($request, $response) {
 // criar usuário
 $router->post("/api/create-users" ,[UserApiController::class , "createUsers"]);
 // esqueci minha senha -> email caixa
-
+$router->post("/api/forget-passwod", [UserApiController::class, "forGetPassword"]);
 // login
 $router->post("/api/login" , [UserApiController::class, "login"]);
 // dashboard
