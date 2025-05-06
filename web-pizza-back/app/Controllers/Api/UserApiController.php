@@ -21,15 +21,7 @@ class UserApiController extends BaseController
     /**
      * Retorna lista de usuários
      */
-    public function index(Request $request, Response $response): void
-    {
-        $users = ["name"];
-        
-      $response->json([
-        "dados_users" => $users
-      ]);  
-    }
-
+  
     public function createUsers(Request $request , Response $response)
     {
       $body = $request->getBody();
@@ -121,7 +113,9 @@ public function forGetPassword(Request $request , Response $response)
  $data = $request->getBody();
 
  $mail = new PHPMailer(true);
- 
+ $mail->CharSet = 'UTF-8'; // Define a codificação como UTF-8
+$mail->Encoding = 'base64';
+
  try{
   $mail->isSMTP();
   $mail->Host = $_ENV["HOST_SMTP"]; // ou smtp.gmail.com, etc.
@@ -142,12 +136,63 @@ public function forGetPassword(Request $request , Response $response)
 
   $mail->send();
   $response->json([
-    "success" => "Verificar na caixa do email" . APP_ROOT
+    "success" => "Verificar na caixa do seu email"
   ]);
  } catch (Exception $e){
   $response->json([
     "error" => 'Email não enviado!' . $e],  401);
  }
 
+}
+
+public function updatePass(Request $request , Response $response)
+{
+  $data = $request->getBody();
+  $senha =$data["senha"] ?? null;  
+  $confirmSenha = $data["confirm_senha"]  ?? null;
+  $email = $data["email"];
+  
+  if($senha === null ||  $confirmSenha === null || $email === null){
+    return $response->json([
+     "success" => false, 
+     "message" => "Campos senha e Confirma senha são obrigatório"
+    ]);
+  exit;
+  }
+
+  if($senha === "" ||  $confirmSenha === "" || $email === ""){
+    return $response->json([
+     "success" => false, 
+     "message" => "Campos senha e Confirma senha são obrigatório"
+    ]);
+    exit;
+  }
+
+  if($senha !== $confirmSenha){
+    return $response->json([
+      "success" => false , 
+      "message"=> "As senhas não coincidem"
+    ]);
+    exit;
+  }
+
+
+  $arrayUser =$this->userModel->findUser($email);
+  if($arrayUser === false || empty($arrayUser)){
+   $response->json([
+    "success" => false , 
+    "message_error" => "Esse email não existe"
+   ]);
+   exit;
+  }
+
+  $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+  $this->userModel->update($arrayUser[0]['id'], ['senha' =>  $senhaHash]);
+
+
+  $response->json([
+    "success" => true, 
+    "message" => "Senha alterada"
+    ]);
 }
     }
