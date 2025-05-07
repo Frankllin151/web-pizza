@@ -157,7 +157,7 @@ public function updatePass(Request $request , Response $response)
      "success" => false, 
      "message" => "Campos senha e Confirma senha são obrigatório"
     ]);
-  exit;
+  
   }
 
   if($senha === "" ||  $confirmSenha === "" || $email === ""){
@@ -165,7 +165,7 @@ public function updatePass(Request $request , Response $response)
      "success" => false, 
      "message" => "Campos senha e Confirma senha são obrigatório"
     ]);
-    exit;
+  
   }
 
   if($senha !== $confirmSenha){
@@ -173,7 +173,7 @@ public function updatePass(Request $request , Response $response)
       "success" => false , 
       "message"=> "As senhas não coincidem"
     ]);
-    exit;
+ 
   }
 
 
@@ -183,7 +183,7 @@ public function updatePass(Request $request , Response $response)
     "success" => false , 
     "message_error" => "Esse email não existe"
    ]);
-   exit;
+  
   }
 
   $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
@@ -195,4 +195,5 @@ public function updatePass(Request $request , Response $response)
     "message" => "Senha alterada"
     ]);
 }
-    }
+
+}

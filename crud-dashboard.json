@@ -1,0 +1,94 @@
+{
+  "v": 7,
+  "name": "crud-dashboard",
+  "folders": [],
+  "requests": [
+    {
+      "v": "12",
+      "name": "pizza add",
+      "method": "POST",
+      "endpoint": "http://localhost:8181/api/dashboard/adicionar-pizza",
+      "params": [],
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer dba74fe5fac0d82d75637d1c8520622d",
+          "active": true,
+          "description": ""
+        }
+      ],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "inherit",
+        "authActive": true
+      },
+      "body": {
+        "contentType": "application/json",
+        "body": "{\n  \"nome\": \"Pizza Portuguesa\",\n  \"imagem\": \"/pizza/pizza.png\",\n  \"descricao\": \"Portuguesa fatiada com ovos e orégano\",\n  \"tamanhos\": {\n  \"p\": 25.9,\n    \"m\": 35.9,\n    \"g\": 45.9,\n    \"gg\": 55.9\n  }\n}"
+      },
+      "requestVariables": [],
+      "responses": {}
+    },
+    {
+      "v": "12",
+      "name": "editar-pizza",
+      "method": "POST",
+      "endpoint": "http://localhost:8181/api/dashboard/editar-pizza",
+      "params": [],
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer dba74fe5fac0d82d75637d1c8520622d",
+          "active": true,
+          "description": ""
+        }
+      ],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "inherit",
+        "authActive": true
+      },
+      "body": {
+        "contentType": "application/json",
+        "body": "{\n   \"id\": 2,\n  \"nome\": \"Pizza Portuguesa\",\n  \"descricao\": \"Presunto, ovo, cebola, azeitona e mussarela\",\n  \"imagem\": \"/pizza/portuguesa.png\",\n  \"tamanhos\": {\n    \"p\": 29.9,\n    \"m\": 39.9,\n    \"g\": 50.0\n  }\n}"
+      },
+      "requestVariables": [],
+      "responses": {}
+    },
+    {
+      "v": "12",
+      "endpoint": "http://localhost:8181/api/dashboard/deletar-pizza",
+      "name": "deletar-pizza",
+      "params": [],
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer dba74fe5fac0d82d75637d1c8520622d",
+          "active": true,
+          "description": ""
+        }
+      ],
+      "method": "POST",
+      "auth": {
+        "authType": "inherit",
+        "authActive": true
+      },
+      "preRequestScript": "",
+      "testScript": "",
+      "body": {
+        "contentType": "application/json",
+        "body": "{\n  \"id\":2\n}"
+      },
+      "requestVariables": [],
+      "responses": {}
+    }
+  ],
+  "headers": [],
+  "auth": {
+    "authType": "none",
+    "authActive": true
+  },
+  "_ref_id": "coll_maeb19ty_aeb502d8-8df6-4dc2-b8a9-ef3843030497"
+}

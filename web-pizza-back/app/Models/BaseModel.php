@@ -127,4 +127,15 @@ abstract class BaseModel
         
         return $stmt->rowCount() > 0;
     }
+
+    /// Excluir preço de uma pizza especifica
+    public function deleteWhere(string $conditions, array $params = []): bool
+{
+    $sql = "DELETE FROM {$this->table} WHERE $conditions";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->rowCount() > 0;
+}
+
 }

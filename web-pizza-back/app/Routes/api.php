@@ -28,3 +28,5 @@ $router->post("/api/login" , [UserApiController::class, "login"]);
 // dashboard
 $router->middleware('AuthMiddleware')->get('/api/dashboard', [UserApiController::class, 'dasHboard']);
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/adicionar-pizza", [ProdutoPizzaController::class, "adicionaPizza"]);
+$router->middleware("AdminUserMiddleware")->post("/api/dashboard/editar-pizza", [ProdutoPizzaController::class, "editarPizza"]);
+$router->middleware("AdminUserMiddleware")->post("/api/dashboard/deletar-pizza", [ProdutoPizzaController::class, "deletarPizza"]);
