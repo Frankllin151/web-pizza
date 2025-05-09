@@ -25,6 +25,7 @@ $router->post("/api/forget-passwod", [UserApiController::class, "forGetPassword"
 $router->post("/api/update-senha", [UserApiController::class, "updatePass"]);
 // login
 $router->post("/api/login" , [UserApiController::class, "login"]);
+
 // dashboard
 $router->middleware('AuthMiddleware')->get('/api/dashboard', [UserApiController::class, 'dasHboard']);
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/adicionar-pizza", [ProdutoPizzaController::class, "adicionaPizza"]);

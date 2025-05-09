@@ -82,14 +82,14 @@ exit;
 
  if(!$email || !$password){
   return $response->json(['error' => 'Email e senha são obrigatórios.'], 400);
-  exit;
+  
  }
 
  $user = $this->userModel->authenticate($email, $password);
 
  if (!$user) {
   return $response->json(['error' => 'Credenciais inválidas.'], 401);
-  exit;
+  
 }
 
  // Gera token simples (pode usar UUID, random_bytes etc.)
