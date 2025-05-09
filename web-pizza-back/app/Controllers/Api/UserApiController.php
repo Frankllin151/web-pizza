@@ -17,6 +17,29 @@ class UserApiController extends BaseController
     {
         $this->userModel = new User();
     }
+
+    private function validarCampos(array $data, array $camposObrigatorios)
+{
+    foreach ($camposObrigatorios as $campo) {
+        if (!isset($data[$campo]) || $data[$campo] === null || $data[$campo] === '' || $data[$campo] === '""') {
+            return [
+                'success' => false,
+                'error' => "O campo '{$campo}' está vazio ou inválido."
+            ];
+        }
+
+        // Verificação adicional: se for o campo 'tamanhos', ele não pode ser um array vazio
+        if ($campo === 'tamanhos' && is_array($data[$campo]) && count($data[$campo]) === 0) {
+            return [
+                'success' => false,
+                'error' => "O campo 'tamanhos' não pode estar vazio."
+            ];
+        }
+    }
+
+    return ['success' => true];
+}
+
     
     /**
      * Retorna lista de usuários
@@ -194,6 +217,51 @@ public function updatePass(Request $request , Response $response)
     "success" => true, 
     "message" => "Senha alterada"
     ]);
+}
+
+public function atualizarSenha(Request $request, Response $response)
+{
+    $data = $request->getBody();
+    
+  $validacao = $this->validarCampos($data, ['senha', 'confirm_senha',"id"]);
+
+  if (!$validacao['success']) {
+    return $response->json([
+        'success' => false,
+        'error' => $validacao['error']
+    ], 400); // Código HTTP 400 - Bad Request
+}
+
+    $senha = $data['senha'];
+    $confirmSenha = $data['confirm_senha'];
+
+    if ($senha !== $confirmSenha) {
+        return $response->json([
+            'success' => false,
+            'error' => 'As senhas não coincidem.'
+        ], 400);
+    }
+
+    // Verifica se o usuário existe
+    $usuario = $this->userModel->findById($data["id"]);
+    if (!$usuario) {
+        return $response->json([
+            'success' => false,
+            'error' => 'Usuário não encontrado.'
+        ], 404);
+    }
+
+    // Atualiza a senha
+
+   $mysql_data = $this->userModel->update((int) $data["id"], [
+        'senha' => password_hash($data['senha'], PASSWORD_DEFAULT)
+    ]); 
+    return $response->json([
+        "success" => true, 
+        "message" => "Senha atualizada com sucesso",
+        "dado" => $mysql_data 
+    ]);
+
 }
 
 }
