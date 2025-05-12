@@ -3,9 +3,10 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
-use App\Models\User;
 use App\Core\Request;
 use App\Core\Response;
+use App\Models\DadosUsers;
+use App\Models\User;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -262,6 +263,43 @@ public function atualizarSenha(Request $request, Response $response)
         "dado" => $mysql_data 
     ]);
 
+}
+
+public function updateDados(Request $request , Response $response)
+{
+   $data =  $request->getBody();
+    
+   $validacao = $this->validarCampos($data, ['user_id',
+        'nome_completo', 
+        'email',
+        'cpf',
+        'telefone',
+        'rua_avenida',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',]);
+
+   if (!$validacao['success']) {
+     return $response->json([
+         'success' => false,
+         'error' => $validacao['error']
+     ], 400); // Código HTTP 400 - Bad Request
+ }
+
+  // Verifica se o usuário existe
+  $usuario = $this->userModel->findById($data["user_id"]);
+  if (!$usuario) {
+      return $response->json([
+          'success' => false,
+          'error' => 'Usuário não encontrado.'
+      ], 404);
+  }
+ 
+
+   return $response->json([
+    $data
+   ]);
 }
 
 }

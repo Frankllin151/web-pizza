@@ -31,5 +31,7 @@ $router->middleware('AuthMiddleware')->get('/api/dashboard', [UserApiController:
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/adicionar-pizza", [ProdutoPizzaController::class, "adicionaPizza"]);
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/editar-pizza", [ProdutoPizzaController::class, "editarPizza"]);
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/deletar-pizza", [ProdutoPizzaController::class, "deletarPizza"]);
-// atulizar dados pelo routa protegida
+
+// atulizar dados pelo routa protegida (senha,dados entrega e pessoal)
 $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-senha",[UserApiController::class, "atualizarSenha"]);
+$router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-dados", [UserApiController::class, "updateDados"]);
