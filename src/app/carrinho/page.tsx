@@ -112,13 +112,21 @@ export default function Carrinho() {
     // Aqui você conectaria com sua API para processar o pedido
     alert(`Pedido finalizado com sucesso! Total: R$ ${total.toFixed(2)}`);
     
+    console.log(dadosEntrega);
+    console.log(itens);
+  console.log(total);
+  
+    
+    
     // Limpar carrinho após finalização
-    setItens([]);
-    localStorage.setItem('carrinho', JSON.stringify([]));
+   // setItens([]);
+    //localStorage.setItem('carrinho', JSON.stringify([]));
     
     // Resetar para a primeira etapa
-    setEtapaAtual(1);
+   // setEtapaAtual(1);
   };
+  console.log(localStorage.getItem('carrinho'));
+  
 
   // Verificar se existem itens no carrinho
   const carrinhoVazio = itens.length === 0;

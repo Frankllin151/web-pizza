@@ -13,9 +13,10 @@ use PHPMailer\PHPMailer\Exception;
 class UserApiController extends BaseController
 {
     private User $userModel;
-    
+    private DadosUsers $dadosUserModel;
     public function __construct()
     {
+      $this->dadosUserModel = new DadosUsers();
         $this->userModel = new User();
     }
 
@@ -46,35 +47,59 @@ class UserApiController extends BaseController
      * Retorna lista de usuários
      */
   
-    public function createUsers(Request $request , Response $response)
-    {
-      $body = $request->getBody();
-      $this->vaLidar($body, $response);
-      $email = $this->userModel->findByEmail($body["email"]);
-      if($email === false){
-        $body["senha"] = password_hash($body["senha"], PASSWORD_DEFAULT);
-
-
-        $create = $this->userModel->create($body);
-        if($create  <= 0){
-          $response->json([
-            "flash" => "Ocorreu algum error" . $create,
-          ]);
-        }
-        $response->json([
-          "flash" => "Usuário criado com sucesso: ir para tela de login" . $create
-        ]);
-
-        exit;
-      } else if(is_array($email)){
-        $response->json([
-          "flash" => "Esse email já existem: Messagem de alerta",
-          "email"  => $body["email"]
-        ]);
-        exit;
-      }
-      
-    }
+     public function createUsers(Request $request , Response $response)
+     {
+         $body = $request->getBody();
+         $this->vaLidar($body, $response);
+     
+         $email = $this->userModel->findByEmail($body["email"]);
+     
+         if ($email === false) {
+             $body["senha"] = password_hash($body["senha"], PASSWORD_DEFAULT);
+     
+             // Cria o usuário e obtém o ID
+             $userId = $this->userModel->create($body);
+     
+             if ($userId <= 0) {
+                 $response->json([
+                     "flash" => "Ocorreu algum erro ao criar o usuário.",
+                 ]);
+                 exit;
+             }
+     
+             // Agora insere dados complementares na tabela dados_users
+             $dadosUsersModel = new DadosUsers();
+     
+             $dadosUsersModel->create([
+                 'user_id' => $userId,
+                 'cpf' => $body['cpf'] ?? null,
+                 'telefone' => $body['telefone'] ?? null,
+                 'rua_avenida' => $body['rua_avenida'] ?? null,
+                 'numero' => $body['numero'] ?? null,
+                 'complemento' => $body['complemento'] ?? null,
+                 'bairro' => $body['bairro'] ?? null,
+                 'cidade' => $body['cidade'] ?? null,
+                 'nome_cartao' => $body['nome_cartao'] ?? null,
+                 'numero_cartao' => $body['numero_cartao'] ?? null,
+                 'validade_cartao' => $body['validade_cartao'] ?? null,
+                 'cvv' => $body['cvv'] ?? null,
+                 'created_at' => date('Y-m-d H:i:s'),
+                 'updated_at' => date('Y-m-d H:i:s')
+             ]);
+     
+             $response->json([
+                 "flash" => "Usuário criado com sucesso!"
+             ]);
+             exit;
+         } elseif (is_array($email)) {
+             $response->json([
+                 "flash" => "Esse email já existe.",
+                 "email" => $body["email"]
+             ]);
+             exit;
+         }
+     }
+     
     private function vaLidar($body, $response)
     {
      if(empty($body["nome"]) || empty(["email"]) || empty($body["senha"])){
@@ -265,12 +290,13 @@ public function atualizarSenha(Request $request, Response $response)
 
 }
 
-public function updateDados(Request $request , Response $response)
+public function updateDados(Request $request, Response $response)
 {
-   $data =  $request->getBody();
-    
-   $validacao = $this->validarCampos($data, ['user_id',
-        'nome_completo', 
+    $data = $request->getBody();
+
+    $validacao = $this->validarCampos($data, [
+        'user_id',
+        'nome_completo',
         'email',
         'cpf',
         'telefone',
@@ -278,28 +304,56 @@ public function updateDados(Request $request , Response $response)
         'numero',
         'complemento',
         'bairro',
-        'cidade',]);
+        'cidade',
+    ]);
 
-   if (!$validacao['success']) {
-     return $response->json([
-         'success' => false,
-         'error' => $validacao['error']
-     ], 400); // Código HTTP 400 - Bad Request
- }
+    if (!$validacao['success']) {
+        return $response->json([
+            'success' => false,
+            'error' => $validacao['error']
+        ], 400);
+    }
 
-  // Verifica se o usuário existe
-  $usuario = $this->userModel->findById($data["user_id"]);
-  if (!$usuario) {
-      return $response->json([
-          'success' => false,
-          'error' => 'Usuário não encontrado.'
-      ], 404);
-  }
- 
+    // Verifica se o usuário existe
+    $usuario = $this->userModel->findById($data["user_id"]);
+    if (!$usuario) {
+        return $response->json([
+            'success' => false,
+            'error' => 'Usuário não encontrado.'
+        ], 404);
+    }
 
-   return $response->json([
-    $data
-   ]);
+    // Atualiza tabela "users"
+    $this->userModel->update($data['user_id'], [
+        'nome' => $data['nome_completo'],
+        'email' => $data['email']
+    ]);
+
+    // Atualiza ou cria os dados em "dados_users"
+    $dadosUser = $this->dadosUserModel->findOneWhere('user_id = :user_id', ['user_id' => $data['user_id']]);
+
+    $dadosParaAtualizar = [
+        'cpf' => $data['cpf'],
+        'telefone' => $data['telefone'],
+        'rua_avenida' => $data['rua_avenida'],
+        'numero' => $data['numero'],
+        'complemento' => $data['complemento'],
+        'bairro' => $data['bairro'],
+        'cidade' => $data['cidade'],
+    ];
+
+    if ($dadosUser) {
+        // Atualiza se já existe
+        $this->dadosUserModel->update($dadosUser['id'], $dadosParaAtualizar);
+    } else {
+        // Cria se ainda não existe
+        $dadosParaAtualizar['user_id'] = $data['user_id'];
+        $this->dadosUserModel->create($dadosParaAtualizar);
+    }
+
+    return $response->json([
+        'success' => true,
+        'message' => 'Dados atualizados com sucesso.'
+    ]);
 }
-
 }

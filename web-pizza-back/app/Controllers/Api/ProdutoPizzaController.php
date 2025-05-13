@@ -150,4 +150,40 @@ public function deletarPizza(Request $request, Response $response)
     return $response->json(['error' => 'Erro ao deletar pizza.'], 500);
 }
 
+public function selectAll(Request $request ,Response $response)
+{
+    $pizzasModel = new Pizzas();
+    $precosModel = new PizzaPreco();
+
+    $pizzas = $pizzasModel->findAll();
+    $precos = $precosModel->findAll();
+
+    // Agrupar os preços por pizza_id
+    $precosAgrupados = [];
+    foreach ($precos as $preco) {
+        $pizzaId = $preco['pizza_id'];
+        $tamanho = strtolower($preco['tamanho']);
+        $valor = (float)$preco['preco'];
+
+        if (!isset($precosAgrupados[$pizzaId])) {
+            $precosAgrupados[$pizzaId] = [];
+        }
+
+        $precosAgrupados[$pizzaId][$tamanho] = $valor;
+    }
+
+    // Montar resultado final
+    $resultado = [];
+    foreach ($pizzas as $pizza) {
+        $resultado[] = [
+            'id' => (int)$pizza['id'],
+            'nome' => $pizza['nome'],
+            'tamanhos' => $precosAgrupados[$pizza['id']] ?? [],
+            'imagem' => $pizza['imagem'],
+            'descricao' => $pizza['descricao'],
+        ];
+    }
+    return $response->json($resultado);   
+}
+
 }
