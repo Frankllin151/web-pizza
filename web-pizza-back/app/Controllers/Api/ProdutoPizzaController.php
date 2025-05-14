@@ -10,9 +10,16 @@ use App\Models\PizzaPreco;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use App\Models\User;
-
+use App\Models\DadosUsers;
 class ProdutoPizzaController extends BaseController
 {
+    protected User $userModel;
+    protected DadosUsers $dadosUser;
+    public function __construct()
+    {
+        $this->userModel = new User();
+        $this->dadosUser = new DadosUsers();
+    }
 
     private function validarCampos(array $data, array $camposObrigatorios)
 {
@@ -184,6 +191,55 @@ public function selectAll(Request $request ,Response $response)
         ];
     }
     return $response->json($resultado);   
+}
+
+public function DadoPayUser(Request $request , Response $response)
+{
+$data =  $request->getBody();
+
+$validacao = $this->validarCampos($data, ["email"]);
+
+if (!$validacao['success']) {
+    return $response->json([
+        'error' => $validacao['error']]);
+    }
+
+ $mysql = $this->userModel->findWhere('email = ?',[$data['email']]);
+if(!$mysql)
+{
+    return $response->json([
+        "success" => false, 
+        "error" => "email não existem"
+    ]);    
+}
+
+if (empty($mysql) || empty($mysql[0])) {
+    return $response->json(['success' => false, 'error' => 'Usuário não encontrado'], 404);
+}
+
+
+
+$iduser = $mysql[0]["id"];
+$sqlDadosUser = $this->dadosUser->findWhere("id = ?" , [$iduser]);
+
+if (empty($sqlDadosUser) || empty($sqlDadosUser[0])) {
+    return $response->json(['success' => false, 'error' => 'Dados do usuário não encontrados'], 404);
+}
+
+return $response->json([
+    "nome" => $mysql[0]["nome"], 
+    "telefone" => $sqlDadosUser[0]["telefone"],
+    "cpf" => $sqlDadosUser[0]["cpf"], 
+    "endereco" => $sqlDadosUser[0]["rua_avenida"], 
+    "numero" => $sqlDadosUser[0]["numero"], 
+    "complemento" => $sqlDadosUser[0]["complemento"], 
+    "bairro" => $sqlDadosUser[0]["bairro"], 
+    "cidade" => $sqlDadosUser[0]["cidade"],
+    "nome_cartao" => $sqlDadosUser[0]["nome_cartao"], 
+    "numero_cartao" => $sqlDadosUser[0]["numero_cartao"], 
+    "validade_cartao" => $sqlDadosUser[0]["validade_cartao"],
+    "cvv" => $sqlDadosUser[0]["cvv"]
+]);
 }
 
 }

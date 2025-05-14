@@ -131,6 +131,47 @@ export default function Carrinho() {
   // Verificar se existem itens no carrinho
   const carrinhoVazio = itens.length === 0;
 
+
+  const verificarUsuario = async () => {
+    if (!dadosEntrega.email) {
+      console.log("Email não informado");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:8181/api/dado/user-entrega-pay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: dadosEntrega.email }),
+      });
+  
+      const result = await response.json();
+  
+      if (result.success === false) {
+        console.log("Usuário não encontrado, continue preenchendo");
+        return;
+      }
+  console.log(result);
+  
+      // Atualiza os dados com o que foi retornado da API
+      setDadosEntrega((prev) => ({
+        ...prev,
+        ...result, // usa os campos retornados
+      }));
+  
+    } catch (error) {
+      console.error("Erro ao verificar usuário:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if (dadosEntrega.email) {
+      verificarUsuario();
+    }
+  }, [dadosEntrega.email]);
+
   // Renderizar etapa atual
   const renderizarEtapa = () => {
     switch (etapaAtual) {

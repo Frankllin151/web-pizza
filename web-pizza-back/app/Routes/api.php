@@ -40,3 +40,4 @@ $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-senha",[Us
 $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-dados", [UserApiController::class, "updateDados"]);
 
 // Delivey ou Entrega
+$router->post("/api/dado/user-entrega-pay",[ProdutoPizzaController::class,"DadoPayUser"]);

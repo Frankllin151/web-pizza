@@ -1,43 +1,65 @@
-"use client"
+"use client";
+import { useState, useEffect } from "react";
+
 import Button from "./componentes/Button";
 import InputLabel from "./componentes/InputLabel";
 import ProdutoPizza from "./componentes/Produtopizza";
 import TextInput from "./componentes/TextInput";
 import Header from "./componentes/header";
 import Carrinho from "./componentes/Carrinho";
-import pizzas from "./data/produtopizza";
-import { useState } from "react";
+import { Pizza } from "./data/produtopizza";
+// import pizzas from "./data/produtopizza"; // <- NÃO precisa mais disso!
 
 export default function Home() {
-const  [filtro, setFiltro] = useState("");
+  const [filtro, setFiltro] = useState("");
+  const [data, setData] = useState<Pizza[]>([]);
 
+  useEffect(() => {
+    const fetchPizzas = async () => {
+      try {
+        const response = await fetch("http://localhost:8181/api/data-get/produto");
+        if (!response.ok) throw new Error("Erro ao buscar produtos");
+        const json = await response.json();
+        setData(json);
+      } catch (error) {
+        console.error("Erro ao buscar as pizzas:", error);
+      }
+    };
 
-const pizzasFiltradas = pizzas.filter(pizza =>
-  pizza.nome.toLowerCase().includes(filtro.toLowerCase())
-);
+    fetchPizzas();
+  }, []);
+
+  const pizzasFiltradas = data.filter(pizza =>
+    pizza.nome.toLowerCase().includes(filtro.toLowerCase())
+  );
 
   return (
-<>
-<Header  onFiltroChange={setFiltro} />
+    <>
+      <Header onFiltroChange={setFiltro} />
 
-<main className="container mx-auto py-8 px-4">
+      <main className="container mx-auto py-8 px-4">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">Nossas Pizzas</h2>
+        {data.length === 0  ?(
+  <p>Carregando...</p>
+         ): (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {pizzasFiltradas.map(pizza => (
-      <ProdutoPizza
-        key={pizza.id}
-        id={pizza.id}
-        nome={pizza.nome}
-        tamanhos={pizza.tamanhos}
-        imagem={pizza.imagem}
-        descricao={pizza.descricao}
-      />
-    ))}
+         
+         {pizzasFiltradas.map(pizza => (
+            <ProdutoPizza
+              key={pizza.id}
+              id={pizza.id}
+              nome={pizza.nome}
+              tamanhos={pizza.tamanhos}
+              imagem={pizza.imagem}
+              descricao={pizza.descricao}
+            />
+          ))}
         </div>
+         )}
+       
       </main>
       <Carrinho />
-</>
- 
+    </>
   );
 }

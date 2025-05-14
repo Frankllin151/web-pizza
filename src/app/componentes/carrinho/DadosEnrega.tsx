@@ -1,8 +1,8 @@
+
 import Button from "../Button"
 import InputLabel from "../InputLabel"
 import TextInput from "../TextInput"
 import { DadosEntregaProps } from "@/app/type/carrinho/DadosEntregaProps" 
-
 
 export default function DadosEntrega({
   dadosEntrega,
@@ -13,6 +13,8 @@ export default function DadosEntrega({
   itens,
 }: DadosEntregaProps)
 {
+  
+  
     return(
         <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-white mb-6">Dados para Entrega</h1>
