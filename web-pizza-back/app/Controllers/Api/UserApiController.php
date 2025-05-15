@@ -61,10 +61,10 @@ class UserApiController extends BaseController
              $userId = $this->userModel->create($body);
      
              if ($userId <= 0) {
-                 $response->json([
+               return  $response->json([
                      "flash" => "Ocorreu algum erro ao criar o usuário.",
                  ]);
-                 exit;
+               
              }
      
              // Agora insere dados complementares na tabela dados_users
@@ -87,26 +87,26 @@ class UserApiController extends BaseController
                  'updated_at' => date('Y-m-d H:i:s')
              ]);
      
-             $response->json([
+            return $response->json([
                  "flash" => "Usuário criado com sucesso!"
              ]);
-             exit;
+            
          } elseif (is_array($email)) {
-             $response->json([
+             return $response->json([
                  "flash" => "Esse email já existe.",
                  "email" => $body["email"]
              ]);
-             exit;
+             
          }
      }
      
     private function vaLidar($body, $response)
     {
      if(empty($body["nome"]) || empty(["email"]) || empty($body["senha"])){
-      $response->json(
+    return  $response->json(
         ["Dados invalido"]
       );
-      exit;
+    
      }
     }
     

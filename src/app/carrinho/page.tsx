@@ -6,30 +6,20 @@ import TextInput from "../componentes/TextInput";
 import Button from "../componentes/Button";
 import { ItemCarrinho } from '../type/ItemCarrinho';
 import ItensCarrinho from '../componentes/carrinho/ItensCarrinho';
-import DadosEntrega from '../componentes/carrinho/DadosEnrega';
+import DadosEntrega from '../componentes/carrinho/DadosEntrega';
+import { DadosEntregas } from '../type/DadosEntrega';
 // Interface para o evento personalizado
 interface CarrinhoAtualizadoEvent extends Event {
   detail: { carrinho: ItemCarrinho[] };
 }
 
 // Interface para dados de entrega
-interface DadosEntrega {
-  nome: string;
-  email: string;
-  cpf: string;
-  telefone: string;
-  endereco: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
 
-}
 
 // Métodos de pagamento
 const METODOS_PAGAMENTO = [
   { id: 'dinheiro', nome: 'Dinheiro' },
-  { id: 'cartao', nome: 'Cartão na entrega' },
+  { id: 'cartao', nome: 'Cartão crédito/Débito' },
   { id: 'pix', nome: 'PIX' }
 ];
 
@@ -38,7 +28,7 @@ export default function Carrinho() {
   const [total, setTotal] = useState<number>(0);
   const [etapaAtual, setEtapaAtual] = useState<number>(1);
   const [metodoPagamento, setMetodoPagamento] = useState<string>('pix');
-  const [dadosEntrega, setDadosEntrega] = useState<DadosEntrega>({
+  const [dadosEntrega, setDadosEntrega] = useState<DadosEntregas>({
     nome: '',
     email: '',
     cpf: '',
@@ -48,6 +38,10 @@ export default function Carrinho() {
     complemento: '',
     bairro: '',
     cidade: '',
+    nomeCartao: '',
+  numeroCartao: '',
+  validade: '',
+  cvv: '',
     
   });
 
@@ -172,6 +166,8 @@ export default function Carrinho() {
     }
   }, [dadosEntrega.email]);
 
+  console.log(dadosEntrega);
+  
   // Renderizar etapa atual
   const renderizarEtapa = () => {
     switch (etapaAtual) {
@@ -244,7 +240,7 @@ export default function Carrinho() {
           name="nomeCartao"
           type="text"
           placeholder="Digite o nome como está no cartão"
-          value=""
+          value={dadosEntrega.nomeCartao}
           onChange={handleInputChange}
           className="w-full mt-1 text-white"
         />
@@ -257,7 +253,7 @@ export default function Carrinho() {
           name="numeroCartao"
           type="text"
           placeholder="0000 0000 0000 0000"
-         value=""
+         value={dadosEntrega.numeroCartao}
           onChange={handleInputChange}
           className="w-full mt-1 text-white"
         />
@@ -271,7 +267,7 @@ export default function Carrinho() {
             name="validadeCartao"
             type="text"
             placeholder="MM/AA"
-            value=""
+            value={dadosEntrega.validade}
             onChange={handleInputChange}
             className="w-full mt-1 text-white"
           />
@@ -283,7 +279,7 @@ export default function Carrinho() {
             name="cvv"
             type="text"
             placeholder="123"
-           value=""
+           value={dadosEntrega.cvv}
             onChange={handleInputChange}
             className="w-full mt-1 text-white"
           />
