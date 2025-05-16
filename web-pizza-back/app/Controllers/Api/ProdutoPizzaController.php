@@ -260,12 +260,14 @@ public function PayAll(Request $request , Response $response)
 
 
    $metodoPay = $data['pagamento']["metodo"];
-   if (!is_array($metodoPay)) {
-    $metodoPay = [$metodoPay];}
+   $valorTotal = $data["pagamento"]['total'];
+   $itens  = $data["itens"];
+   $itens = $this->lookpreco($itens);
+  $metodoPay = is_array($metodoPay) ? $metodoPay : [$metodoPay];
 
 $dados = [];
     foreach($metodoPay as $metodo){
-        $dados = $this->montarDadosPagamento($metodo);
+        $dados = $this->montarDadosPagamento($metodo,  $itens, $valorTotal);
 
     }
     // Aqui você pode continuar o processamento do pagamento,
@@ -276,51 +278,69 @@ $dados = [];
         "usuario_id" => $usuarioId
     ]);
 }
-
-private function montarDadosPagamento( $metodo)
+private function lookpreco($itens)
 {
- switch($metodo){
-    case "pix":
-     return $this->montarPagamentoPix();
-    case "dinheiro":
-     return  $this->montarPagamentoPix();
-    case "cartao": 
-      return $this->montarPagamentoCartao();
-    default: 
-    throw new \Exception("Método de pagamento inválido: {$metodo}");
- }
+    
+    $pizzaPreco = new PizzaPreco();
+    foreach ($itens as &$item) {
+    $preco = $pizzaPreco->findOneWhere(
+        'pizza_id = :pizza_id AND tamanho = :tamanho',
+        [
+            'pizza_id' => $item['id'],
+            'tamanho' => $item['tamanho']
+        ]
+    );
+
+   $item['preco'] = isset($preco['preco']) ? round((float) $preco['preco'], 2) : 0.00;
+
+}
+ unset($item);
+return  $itens;
+}
+private function montarDadosPagamento($metodo, $itens, $valorTotal)
+{
+    switch($metodo) {
+        case "pix":
+            return $this->montarPagamentoPix($itens,$valorTotal);
+        case "dinheiro":
+            return $this->montarPagamentoDinheiro($itens, $valorTotal);
+        case "cartao":
+            return $this->montarPagamentoCartao($itens,$valorTotal);
+        default: 
+            throw new \Exception("Método de pagamento inválido: {$metodo}");
+    }
 }
 
-  private function montarPagamentoPix(): array
-    {
-        return [
-            'tipo' => 'pix',
-            'chave' => 'pix@empresa.com',
-            'valor' => 150.00,
-            'itens' => ['Produto A', 'Produto B']
-        ];
-    }
+private function montarPagamentoPix(array $itens, string $valorTotal): array
+{
+    return [
+        'tipo' => 'pix',
+        'chave' => 'pix@empresa.com',
+        'valor' => $valorTotal,
+        'itens' => $itens
+    ];
+}
 
-    private function montarPagamentoDinheiro(): array
-    {
-        return [
-            'tipo' => 'dinheiro',
-            'valor' => 150.00,
-            'troco_para' => 200.00,
-            'itens' => ['Produto A', 'Produto B']
-        ];
-    }
+private function montarPagamentoDinheiro(array $itens , string $valorTotal): array
+{
+    return [
+        'tipo' => 'dinheiro',
+        'valor' => $valorTotal ,
+        'itens' => $itens
+    ];
+}
 
-    private function montarPagamentoCartao(): array
-    {
-        return [
-            'tipo' => 'cartao',
-            'bandeira' => 'Visa',
-            'parcelas' => 2,
-            'valor' => 150.00,
-            'itens' => ['Produto A', 'Produto B']
-        ];
-    }
+private function montarPagamentoCartao(array $itens, string $valorTotal): array
+{
+    return [
+        'tipo' => 'cartao',
+        'bandeira' => 'Visa',
+        'parcelas' =>1,
+        'valor' => $valorTotal,
+        'itens' => $itens
+    ];
+}
+
 private function UsuarioCreate($email, $nome, $dataClient)
 {
     // Verifica se usuário existe

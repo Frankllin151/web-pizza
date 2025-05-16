@@ -77,11 +77,21 @@ export default function Carrinho() {
   // Finalizar pedido
   const finalizarPedido = (): void => {
     //alert('Pedido finalizado! Total: R$ ' + total.toFixed(2));
-    
-  
-   
   };
+ 
+  useEffect(() => {
+    // Quando receber o evento, abre o carrinho
+    const abrirCarrinho = () => setIsOpen(true);
 
+    window.addEventListener('carrinhoAtualizado', abrirCarrinho);
+
+    // Limpa o listener ao desmontar o componente
+    return () => {
+      window.removeEventListener('carrinhoAtualizado', abrirCarrinho);
+    };
+  }, []);
+
+  
   return (
     <div className="fixed right-0 top-20 z-50">
       {/* Botão do carrinho (visível quando fechado) */}

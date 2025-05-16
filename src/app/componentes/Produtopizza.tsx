@@ -122,7 +122,7 @@ export default function ProdutoPizza({
 
         <button
           onClick={adicionarAoCarrinho}
-          className="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md flex items-center justify-center font-medium transition-colors duration-200"
+          className=" w-full py-2 bg-orange-500 hover:bg-gray-800 text-white rounded-md flex items-center justify-center font-medium transition-colors duration-200"
         >
           <svg
             className="w-5 h-5 mr-2"

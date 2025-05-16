@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect} from 'react';
 import Header from "../componentes/header";
 import InputLabel from "../componentes/InputLabel";
 import TextInput from "../componentes/TextInput";
@@ -27,6 +27,7 @@ export default function Carrinho() {
   const [itens, setItens] = useState<ItemCarrinho[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [etapaAtual, setEtapaAtual] = useState<number>(1);
+  const [scrollAplicado, setScrollAplicado] = useState<boolean>(false);
   const [metodoPagamento, setMetodoPagamento] = useState<string>('pix');
   const [dadosEntrega, setDadosEntrega] = useState<DadosEntregas>({
     nome: '',
@@ -45,6 +46,61 @@ export default function Carrinho() {
     
   });
 
+  useEffect(() => {
+    const handleScroll = () => {
+      console.log('Scroll Y:', window.scrollY);
+      console.log('Scroll X:', window.scrollX);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (etapaAtual === 1 && !scrollAplicado) {
+      // Delay pequeno para garantir que a página esteja pronta pra scroll
+      setTimeout(() => {
+        window.scrollTo({ top: 417, behavior: 'smooth' });
+        setScrollAplicado(true);
+      }, 100);
+    }
+  }, [etapaAtual, scrollAplicado]);
+
+
+
+  useEffect(() => {
+    const handleScroll = () => {
+      console.log('Scroll Y:', window.scrollY);
+      console.log('Scroll X:', window.scrollX);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (etapaAtual === 2  && !scrollAplicado) {
+      // Delay pequeno para garantir que a página esteja pronta pra scroll
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setScrollAplicado(true);
+      }, 100);
+    }
+  }, [etapaAtual, scrollAplicado]);
+
+
+ 
+  useEffect(() => {
+    if (etapaAtual === 3 && !scrollAplicado) {
+      // Delay pequeno para garantir que a página esteja pronta pra scroll
+      setTimeout(() => {
+        window.scrollTo({ top: 2, behavior: 'smooth' });
+        setScrollAplicado(true);
+      }, 100);
+    }
+  }, [etapaAtual, scrollAplicado]);
+
+ console.log(etapaAtual);
   // Carregar itens do carrinho ao montar o componente
   useEffect(() => {
     const carregarCarrinho = () => {
