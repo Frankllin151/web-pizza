@@ -46,47 +46,12 @@ export default function Carrinho() {
     
   });
 
-  useEffect(() => {
-    const handleScroll = () => {
-      console.log('Scroll Y:', window.scrollY);
-      console.log('Scroll X:', window.scrollX);
-    };
+  
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (etapaAtual === 1 && !scrollAplicado) {
-      // Delay pequeno para garantir que a página esteja pronta pra scroll
-      setTimeout(() => {
-        window.scrollTo({ top: 417, behavior: 'smooth' });
-        setScrollAplicado(true);
-      }, 100);
-    }
-  }, [etapaAtual, scrollAplicado]);
+  
 
 
-
-  useEffect(() => {
-    const handleScroll = () => {
-      console.log('Scroll Y:', window.scrollY);
-      console.log('Scroll X:', window.scrollX);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (etapaAtual === 2  && !scrollAplicado) {
-      // Delay pequeno para garantir que a página esteja pronta pra scroll
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setScrollAplicado(true);
-      }, 100);
-    }
-  }, [etapaAtual, scrollAplicado]);
+  
 
 
  
@@ -94,7 +59,7 @@ export default function Carrinho() {
     if (etapaAtual === 3 && !scrollAplicado) {
       // Delay pequeno para garantir que a página esteja pronta pra scroll
       setTimeout(() => {
-        window.scrollTo({ top: 2, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         setScrollAplicado(true);
       }, 100);
     }
