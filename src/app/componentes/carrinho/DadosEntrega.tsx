@@ -3,7 +3,8 @@ import Button from "../Button"
 import InputLabel from "../InputLabel"
 import TextInput from "../TextInput"
 import { DadosEntregaProps } from "@/app/type/carrinho/DadosEntregaProps" 
-
+import { z } from "zod";
+import { Schema } from "zod";
 export default function DadosEntrega({
   dadosEntrega,
   handleInputChange,
@@ -13,6 +14,43 @@ export default function DadosEntrega({
   itens,
 }: DadosEntregaProps)
 {
+
+  const schema = z.object({
+  nome: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("E-mail inválido"),
+  cpf: z.string().min(1, "CPF é obrigatório"),
+  telefone: z.string().min(1, "Telefone é obrigatório"),
+  endereco: z.string().min(1, "Endereço é obrigatório"),
+  numero: z.string().min(1, "Número é obrigatório"),
+  complemento: z.string().min(1, "Complemento é obrigatório"),
+  bairro: z.string().min(1, "Bairro é obrigatório"),
+  cidade: z.string().min(1, "Cidade é obrigatória"),
+});
+
+// Função chamada ao clicar no botão "Continuar"
+const handleValidarCampos = () => {
+  const resultado = schema.safeParse({
+    nome: dadosEntrega.nome,
+    email: dadosEntrega.email,
+    cpf: dadosEntrega.cpf,
+    telefone: dadosEntrega.telefone,
+    endereco: dadosEntrega.endereco,
+    numero: dadosEntrega.numero,
+    complemento: dadosEntrega.complemento,
+    bairro: dadosEntrega.bairro,
+    cidade: dadosEntrega.cidade,
+  });
+
+  if (!resultado.success) {
+    const erros = resultado.error.format();
+    alert("Preencha todos os campos corretamente.");
+    console.log(erros); // Para debug
+    return;
+  }
+
+  // Se tudo estiver certo, avança etapa
+  avancarEtapa();
+};
   
   
     return(
@@ -191,7 +229,7 @@ export default function DadosEntrega({
                 <Button
                   color="bg-[#F97316]" 
                   className="w-1/2 py-2"
-                  onClick={avancarEtapa}
+                  onClick={handleValidarCampos}
                 >
                   Continuar
                 </Button>
