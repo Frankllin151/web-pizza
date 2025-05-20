@@ -13,11 +13,11 @@ import { Pizza } from "./data/produtopizza";
 export default function Home() {
   const [filtro, setFiltro] = useState("");
   const [data, setData] = useState<Pizza[]>([]);
-
+  const apiurl = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
     const fetchPizzas = async () => {
       try {
-        const response = await fetch("http://localhost:8181/api/data-get/produto");
+        const response = await fetch(`${apiurl}/api/data-get/produto`);
         if (!response.ok) throw new Error("Erro ao buscar produtos");
         const json = await response.json();
         setData(json);

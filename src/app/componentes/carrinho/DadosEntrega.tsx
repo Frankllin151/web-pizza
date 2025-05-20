@@ -1,10 +1,11 @@
-
+"use client"
 import Button from "../Button"
 import InputLabel from "../InputLabel"
 import TextInput from "../TextInput"
 import { DadosEntregaProps } from "@/app/type/carrinho/DadosEntregaProps" 
 import { z } from "zod";
 import { Schema } from "zod";
+import { useState } from "react"
 export default function DadosEntrega({
   dadosEntrega,
   handleInputChange,
@@ -14,6 +15,8 @@ export default function DadosEntrega({
   itens,
 }: DadosEntregaProps)
 {
+  const [errosEntrega, setErrosEntrega] = useState<{ [key: string]: string }>({});
+
 
   const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
@@ -42,13 +45,24 @@ const handleValidarCampos = () => {
   });
 
   if (!resultado.success) {
-    const erros = resultado.error.format();
-    alert("Preencha todos os campos corretamente.");
-    console.log(erros); // Para debug
+    // Cast para evitar erro do TypeScript
+    const errosFormatados = resultado.error.format() as unknown as Record<string, { _errors: string[] }>;
+
+
+    // Cria objeto simples com os erros por campo
+    const errosTratados: { [key: string]: string } = {};
+    for (const campo in errosFormatados) {
+      if (campo !== "_errors" && errosFormatados[campo]._errors.length > 0) {
+        errosTratados[campo] = errosFormatados[campo]._errors[0];
+      }
+    }
+
+    setErrosEntrega(errosTratados);
     return;
   }
 
-  // Se tudo estiver certo, avança etapa
+  // Nenhum erro: limpa e avança
+  setErrosEntrega({});
   avancarEtapa();
 };
   
@@ -74,6 +88,8 @@ const handleValidarCampos = () => {
                     onChange={handleInputChange}
                     className="w-full mt-1 text-white"
                   />
+                {errosEntrega.nome && 
+                <p className="text-red-500">{errosEntrega.nome}</p>}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,6 +104,8 @@ const handleValidarCampos = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 text-white"
                     />
+                      {errosEntrega.email && 
+                <p className="text-red-500">{errosEntrega.email}</p>}
                   </div>
                   <div>
                     <InputLabel htmlFor="telefone">Telefone</InputLabel>
@@ -100,6 +118,8 @@ const handleValidarCampos = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 text-white"
                     />
+                      {errosEntrega.telefone && 
+                <p className="text-red-500">{errosEntrega.telefone}</p>}
                   </div>
                 </div>
                 
@@ -114,6 +134,8 @@ const handleValidarCampos = () => {
                     onChange={handleInputChange}
                     className="w-full mt-1 text-white"
                   />
+                    {errosEntrega.cpf && 
+                <p className="text-red-500">{errosEntrega.cpf}</p>}
                 </div>
                 
                 
@@ -130,6 +152,8 @@ const handleValidarCampos = () => {
                     onChange={handleInputChange}
                     className="w-full mt-1 text-white"
                   />
+                    {errosEntrega.endereco && 
+                <p className="text-red-500">{errosEntrega.endereco}</p>}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -144,6 +168,8 @@ const handleValidarCampos = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 text-white"
                     />
+                      {errosEntrega.numero && 
+                <p className="text-red-500">{errosEntrega.numero}</p>}
                   </div>
                   <div>
                     <InputLabel htmlFor="complemento">Complemento</InputLabel>
@@ -156,6 +182,8 @@ const handleValidarCampos = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 text-white"
                     />
+                      {errosEntrega.complemento && 
+                <p className="text-red-500">{errosEntrega.complemento}</p>}
                   </div>
                 </div>
                 
@@ -171,6 +199,8 @@ const handleValidarCampos = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 text-white"
                     />
+                      {errosEntrega.bairro && 
+                <p className="text-red-500">{errosEntrega.bairro}</p>}
                   </div>
                   <div>
                     <InputLabel htmlFor="cidade">Cidade</InputLabel>
@@ -183,6 +213,8 @@ const handleValidarCampos = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 text-white"
                     />
+                      {errosEntrega.cidade && 
+                <p className="text-red-500">{errosEntrega.cidade}</p>}
                   </div>
                 </div>
               </div>

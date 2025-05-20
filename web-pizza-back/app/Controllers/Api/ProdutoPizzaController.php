@@ -11,6 +11,10 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use App\Models\User;
 use App\Models\DadosUsers;
+
+use MercadoPago\MercadoPagoConfig;
+use MercadoPago\Client\Payment\PaymentClient;
+use MercadoPago\Exceptions\MPApiException;
 class ProdutoPizzaController extends BaseController
 {
     protected User $userModel;
@@ -267,7 +271,7 @@ public function PayAll(Request $request , Response $response)
 
 $dados = [];
     foreach($metodoPay as $metodo){
-        $dados = $this->montarDadosPagamento($metodo,  $itens, $valorTotal);
+        $dados = $this->montarDadosPagamento($metodo,  $itens, $valorTotal , $usuarioId);
 
     }
     // Aqui você pode continuar o processamento do pagamento,
@@ -297,11 +301,11 @@ private function lookpreco($itens)
  unset($item);
 return  $itens;
 }
-private function montarDadosPagamento($metodo, $itens, $valorTotal)
+private function montarDadosPagamento($metodo, $itens, $valorTotal, $usuarioId)
 {
     switch($metodo) {
         case "pix":
-            return $this->montarPagamentoPix($itens,$valorTotal);
+            return $this->montarPagamentoPix($itens,$valorTotal, $usuarioId);
         case "dinheiro":
             return $this->montarPagamentoDinheiro($itens, $valorTotal);
         case "cartao":
@@ -311,14 +315,37 @@ private function montarDadosPagamento($metodo, $itens, $valorTotal)
     }
 }
 
-private function montarPagamentoPix(array $itens, string $valorTotal): array
+private function montarPagamentoPix(array $itens, string $valorTotal, array  $usuarioId): array
 {
+       MercadoPagoConfig::setAccessToken($_ENV["MERCADO_TOKEN_PAY"]);
+       MercadoPagoConfig::setRuntimeEnviroment(MercadoPagoConfig::LOCAL);
+$client = new PaymentClient();
+
+$request = [
+    "transaction_amount" => (float) $valorTotal,
+    "description" => "Web pizza- Pedido  via pix",
+    "payment_method_id" => "pix",
+    "payer" => [
+        "email" => $usuarioId[0]['email'],
+        "first_name" => $usuarioId[0]['nome'],
+    ],
+];
+
+try {
+    $payment = $client->create($request);
+
     return [
-        'tipo' => 'pix',
-        'chave' => 'pix@empresa.com',
-        'valor' => $valorTotal,
-        'itens' => $itens
+        'status' => $payment->status,
+        'id_pagamento' => $payment->id,
+        'codigo_pix' => $payment->point_of_interaction->transaction_data->qr_code,
+        'qr_code_base64' => $payment->point_of_interaction->transaction_data->qr_code_base64,
     ];
+} catch (MPApiException $e) {
+    return [
+        'erro' => true,
+        'mensagem' => $e->getApiResponse()->getContent(),
+    ];
+}
 }
 
 private function montarPagamentoDinheiro(array $itens , string $valorTotal): array

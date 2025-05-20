@@ -29,6 +29,8 @@ export default function Carrinho() {
   const [etapaAtual, setEtapaAtual] = useState<number>(1);
   const [scrollAplicado, setScrollAplicado] = useState<boolean>(false);
   const [metodoPagamento, setMetodoPagamento] = useState<string>('pix');
+  const [codigoPix, setCodigoPix] = useState('');
+  const [qrCodeBase64, setQrCodeBase64] = useState('');
   const [dadosEntrega, setDadosEntrega] = useState<DadosEntregas>({
     nome: '',
     email: '',
@@ -48,7 +50,31 @@ export default function Carrinho() {
 
   
 
-  
+
+const  dataPayAndEntrega = {
+ "cliente": {
+  "nome": dadosEntrega.nome,
+    "email": dadosEntrega.email,
+    "cpf": dadosEntrega.cpf,
+    "telefone": dadosEntrega.telefone,
+    "endereco": dadosEntrega.endereco,
+    "numero": dadosEntrega.numero,
+    "complemento": dadosEntrega.complemento,
+    "bairro": dadosEntrega.bairro,
+    "cidade": dadosEntrega.cidade
+ }, 
+ "pagamento": {
+  "metodo": metodoPagamento, 
+  "total":  total, 
+  "cartao": "token"
+ }, 
+ "itens": itens.map(item =>({
+  id: item.id, 
+  quantidade: item.quantidade, 
+  tamanho: item.tamanho
+ }))
+}
+
 
 
   
@@ -65,7 +91,7 @@ export default function Carrinho() {
     }
   }, [etapaAtual, scrollAplicado]);
 
- console.log(etapaAtual);
+ 
   // Carregar itens do carrinho ao montar o componente
   useEffect(() => {
     const carregarCarrinho = () => {
@@ -123,24 +149,45 @@ export default function Carrinho() {
   };
 
   // Função para finalizar pedido
-  const finalizarPedido = () => {
+  const finalizarPedido = async () => {
     // Aqui você conectaria com sua API para processar o pedido
     alert(`Pedido finalizado com sucesso! Total: R$ ${total.toFixed(2)}`);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     
-    console.log(dadosEntrega);
-    console.log(itens);
-  console.log(total);
+   try{
+ const response =  await fetch(`${apiUrl}/api/dado/pay-all`, {
+  method: "POST",
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify(dataPayAndEntrega)
+ })
+ if(!response.ok){
+    throw new Error(`Erro na requisição: ${response.status}`);
+ }
+  const dataPay = await response.json();
+  
+    if (dataPay.dados) {
+  setCodigoPix(dataPay.dados.codigo_pix);
+  setQrCodeBase64(dataPay.dados.qr_code_base64);
+}
+   } catch(error){
+  console.error('Erro ao finalizar pedido:', error);
+   }
+    
   
     
-    
-    // Limpar carrinho após finalização
+  // Limpar carrinho após finalização
    // setItens([]);
     //localStorage.setItem('carrinho', JSON.stringify([]));
     
     // Resetar para a primeira etapa
-   // setEtapaAtual(1);
+   // setEtapaAtual(1);  
+    
   };
-  console.log(localStorage.getItem('carrinho'));
+
+  
+  
   
 
   // Verificar se existem itens no carrinho
@@ -154,7 +201,8 @@ export default function Carrinho() {
     }
   
     try {
-      const response = await fetch("http://localhost:8181/api/dado/user-entrega-pay", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${apiUrl}/api/dado/user-entrega-pay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -168,7 +216,7 @@ export default function Carrinho() {
         console.log("Usuário não encontrado, continue preenchendo");
         return;
       }
-  console.log(result);
+  
   
       // Atualiza os dados com o que foi retornado da API
       setDadosEntrega((prev) => ({
@@ -312,9 +360,11 @@ export default function Carrinho() {
                   
                   {metodoPagamento === 'pix' && (
                     <div className="bg-[#2D2D30] p-4 rounded-md mb-6">
+                    
                       <p className="text-white text-sm">
                         Após confirmar o pedido, você receberá as instruções de pagamento via PIX.
                       </p>
+                      
                     </div>
                   )}
                   {metodoPagamento === "cartao" && 
@@ -365,14 +415,42 @@ export default function Carrinho() {
                           Concordo com os termos e condições e políticas de privacidade
                         </label>
                       </div>
-                      
-                      <Button
-                        color="bg-[#F97316]" 
-                        className="w-full py-3 font-bold"
-                        onClick={finalizarPedido}
-                      >
-                        Finalizar Pedido
-                      </Button>
+                      <div className='pixs '>
+                        {qrCodeBase64 && (
+  <img 
+    src={`data:image/png;base64,${qrCodeBase64}`} 
+    alt="QR Code Pix" 
+    style={{ width: '200px', height: '200px' }} 
+  />
+  
+)}
+{codigoPix && (
+
+<Button
+ color="bg-[#F97316]" 
+  className="w-full py-3 font-bold mt-3"
+onClick={() => {
+    navigator.clipboard.writeText(codigoPix)
+      .then(() => alert('Código Pix copiado!'))
+      .catch(() => alert('Erro ao copiar o código Pix.'));
+  }}
+>
+Copia codigo
+</Button>
+)}
+
+                      </div>
+                      <div className='mt-3'>
+                       {!codigoPix ? (
+                        <Button
+    color="bg-[#F97316]"
+    className="w-full py-3 font-bold"
+    onClick={finalizarPedido}
+  >
+    Finalizar Pedido
+  </Button>
+) : null}
+                      </div>
                     </div>
                   </div>
                 </div>
