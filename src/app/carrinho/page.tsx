@@ -8,6 +8,7 @@ import { ItemCarrinho } from '../type/ItemCarrinho';
 import ItensCarrinho from '../componentes/carrinho/ItensCarrinho';
 import DadosEntrega from '../componentes/carrinho/DadosEntrega';
 import { DadosEntregas } from '../type/DadosEntrega';
+import { z } from "zod";
 // Interface para o evento personalizado
 interface CarrinhoAtualizadoEvent extends Event {
   detail: { carrinho: ItemCarrinho[] };
@@ -31,6 +32,7 @@ export default function Carrinho() {
   const [metodoPagamento, setMetodoPagamento] = useState<string>('pix');
   const [codigoPix, setCodigoPix] = useState('');
   const [qrCodeBase64, setQrCodeBase64] = useState('');
+  const [errosEntrega, setErrosEntrega] = useState<{ [key: string]: string }>({});
   const [dadosEntrega, setDadosEntrega] = useState<DadosEntregas>({
     nome: '',
     email: '',
@@ -48,7 +50,7 @@ export default function Carrinho() {
     
   });
 
-  
+
 
 
 const  dataPayAndEntrega = {
@@ -76,8 +78,50 @@ const  dataPayAndEntrega = {
 }
 
 
+const schema = z.object({
+  nomeCartao: z.string().min(1, "Nome é obrigatório"),
+  numeroCartao: z
+    .string()
+    .regex(/^\d{16}$/, "Número do cartão deve ter 16 dígitos"),
+  validade: z
+    .string()
+    .regex(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Validade deve estar no formato MM/AA"),
+  cvv: z
+    .string()
+    .regex(/^\d{3,4}$/, "CVV deve ter 3 ou 4 dígitos"),
+});
 
-  
+
+// Função chamada ao clicar no botão "Continuar"
+const handleValidarCampos = () => {
+  const resultado = schema.safeParse({
+    nomeCartao: dadosEntrega.nomeCartao,
+    numeroCartao: dadosEntrega.numeroCartao,
+    valiadee: dadosEntrega.validade,
+    cvv: dadosEntrega.cvv,
+    
+  });
+
+  if (!resultado.success) {
+    // Cast para evitar erro do TypeScript
+    const errosFormatados = resultado.error.format() as unknown as Record<string, { _errors: string[] }>;
+
+
+    // Cria objeto simples com os erros por campo
+    const errosTratados: { [key: string]: string } = {};
+    for (const campo in errosFormatados) {
+      if (campo !== "_errors" && errosFormatados[campo]._errors.length > 0) {
+        errosTratados[campo] = errosFormatados[campo]._errors[0];
+      }
+    }
+
+    setErrosEntrega(errosTratados);
+    return;
+  }
+
+  // Nenhum erro: limpa e avança
+  finalizarPedido();
+};
 
 
  
@@ -147,6 +191,8 @@ const  dataPayAndEntrega = {
   const voltarEtapa = () => {
     setEtapaAtual(etapaAtual - 1);
   };
+
+  
 
   // Função para finalizar pedido
   const finalizarPedido = async () => {
@@ -313,6 +359,8 @@ const  dataPayAndEntrega = {
           onChange={handleInputChange}
           className="w-full mt-1 text-white"
         />
+          {errosEntrega.nomeCartao && 
+                <p className="text-red-500">{errosEntrega.nomeCartao}</p>}
       </div>
 
       <div>
@@ -326,6 +374,8 @@ const  dataPayAndEntrega = {
           onChange={handleInputChange}
           className="w-full mt-1 text-white"
         />
+          {errosEntrega.numeroCartao && 
+                <p className="text-red-500">{errosEntrega.numeroCartao}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -340,6 +390,8 @@ const  dataPayAndEntrega = {
             onChange={handleInputChange}
             className="w-full mt-1 text-white"
           />
+            {errosEntrega.validade && 
+                <p className="text-red-500">{errosEntrega.validade}</p>}
         </div>
         <div>
           <InputLabel htmlFor="cvv">CVV</InputLabel>
@@ -352,6 +404,8 @@ const  dataPayAndEntrega = {
             onChange={handleInputChange}
             className="w-full mt-1 text-white"
           />
+            {errosEntrega.cvv && 
+                <p className="text-red-500">{errosEntrega.cvv}</p>}
         </div>
       </div>
     </div>
@@ -445,7 +499,7 @@ Copia codigo
                         <Button
     color="bg-[#F97316]"
     className="w-full py-3 font-bold"
-    onClick={finalizarPedido}
+    onClick={handleValidarCampos} 
   >
     Finalizar Pedido
   </Button>
