@@ -83,10 +83,10 @@ const schema = z.object({
   numeroCartao: z
     .string()
     .regex(/^\d{16}$/, "Número do cartão deve ter 16 dígitos"),
-  validade: z
+   validade: z
     .string()
     .regex(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Validade deve estar no formato MM/AA"),
-  cvv: z
+ cvv: z
     .string()
     .regex(/^\d{3,4}$/, "CVV deve ter 3 ou 4 dígitos"),
 });
@@ -97,7 +97,7 @@ const handleValidarCampos = () => {
   const resultado = schema.safeParse({
     nomeCartao: dadosEntrega.nomeCartao,
     numeroCartao: dadosEntrega.numeroCartao,
-    valiadee: dadosEntrega.validade,
+    valiade: dadosEntrega.validade,
     cvv: dadosEntrega.cvv,
     
   });
@@ -382,8 +382,8 @@ const handleValidarCampos = () => {
         <div>
           <InputLabel htmlFor="validadeCartao">Validade</InputLabel>
           <TextInput
-            id="validadeCartao"
-            name="validadeCartao"
+            id="validade"
+            name="validade"
             type="text"
             placeholder="MM/AA"
             value={dadosEntrega.validade}
