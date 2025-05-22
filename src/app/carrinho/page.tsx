@@ -68,7 +68,9 @@ const  dataPayAndEntrega = {
  "pagamento": {
   "metodo": metodoPagamento, 
   "total":  total, 
-  "cartao": "token"
+  "cartao": {
+    "token": ""
+  }
  }, 
  "itens": itens.map(item =>({
   id: item.id, 
@@ -94,7 +96,8 @@ const schema = z.object({
 
 // Função chamada ao clicar no botão "Continuar"
 const handleValidarCampos = () => {
-  const resultado = schema.safeParse({
+  if(metodoPagamento === "cartao"){
+const resultado = schema.safeParse({
     nomeCartao: dadosEntrega.nomeCartao,
     numeroCartao: dadosEntrega.numeroCartao,
     valiade: dadosEntrega.validade,
@@ -118,9 +121,17 @@ const handleValidarCampos = () => {
     setErrosEntrega(errosTratados);
     return;
   }
-
+   finalizarPedido();
+  }
+  
+if(metodoPagamento === "pix"){
+   finalizarPedido();
+}
+if(metodoPagamento === "dinheiro"){
+   finalizarPedido();
+}
   // Nenhum erro: limpa e avança
-  finalizarPedido();
+ 
 };
 
 
@@ -212,6 +223,7 @@ const handleValidarCampos = () => {
     throw new Error(`Erro na requisição: ${response.status}`);
  }
   const dataPay = await response.json();
+  console.log(dataPay);
   
     if (dataPay.dados) {
   setCodigoPix(dataPay.dados.codigo_pix);
@@ -281,7 +293,7 @@ const handleValidarCampos = () => {
     }
   }, [dadosEntrega.email]);
 
-  console.log(dadosEntrega);
+
   
   // Renderizar etapa atual
   const renderizarEtapa = () => {
