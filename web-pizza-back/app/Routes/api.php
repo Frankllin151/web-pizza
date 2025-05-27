@@ -42,3 +42,4 @@ $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-dados", [U
 // Delivey ou Entrega
 $router->post("/api/dado/user-entrega-pay",[ProdutoPizzaController::class,"DadoPayUser"]);
 $router->post("/api/dado/pay-all", [ProdutoPizzaController::class, "PayAll"]);
+$router->get("/api/check-status-pay", [ProdutoPizzaController::class, "checkStatusPay"]);

@@ -11,6 +11,8 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use App\Models\User;
 use App\Models\DadosUsers;
+use App\Models\Pedido;
+use App\Models\PedidoItens;
 
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Payment\PaymentClient;
@@ -277,6 +279,9 @@ $dados = [];
     // Aqui você pode continuar o processamento do pagamento,
     // usando $usuarioId se precisar
     date_default_timezone_set('America/Sao_Paulo');
+    $pedidoModel = new Pedido();
+    $pedidoItemModel = new PedidoItens();
+
     $pedido = [
     'cliente' => $usuarioId[0]["nome"],
     'user_id' => $usuarioId[0]["id"],
@@ -287,14 +292,19 @@ $dados = [];
     'metodo_pagamento' => $metodoPay[0],
     'itens' => []
 ];
+// Salva pedido e pega o ID do pedido criado
+    $pedidoId = $pedidoModel->create($pedido);
 
 foreach ($itens as $item) {
-    $pedido['itens'][] = [
-        'pizza_id' => $item['id'],
-        'quantidade' => $item['quantidade'],
-        'tamanho' => $item['tamanho']
-    ];
+     $pedidoItemModel->create([
+            'pedido_id' => $pedidoId,
+            'pizza_id' => $item['id'],
+            'quantidade' => $item['quantidade'],
+            'tamanho' => $item['tamanho']
+        ]);
 }
+   $pedido['id'] = $pedidoId;
+    $pedido['itens'] = $itens;
 
     return $response->json([
         "pedido" => $pedido, 
@@ -454,5 +464,12 @@ extract($data); // cria variáveis com base nas chaves
     
         return $novoUsuarioId;
     }
+}
+public function checkStatusPay(Request $request, Response $response)
+{
+   
+    return $response->json([
+        'id_pagamento' =>"todo",
+        ]);
 }
 }
