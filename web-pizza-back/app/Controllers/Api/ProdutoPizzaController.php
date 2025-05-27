@@ -276,10 +276,28 @@ $dados = [];
     }
     // Aqui você pode continuar o processamento do pagamento,
     // usando $usuarioId se precisar
+    date_default_timezone_set('America/Sao_Paulo');
+    $pedido = [
+    'cliente' => $usuarioId[0]["nome"],
+    'user_id' => $usuarioId[0]["id"],
+    'status' => $dados["status"],
+    'data' => date("Y-m-d H:i:s"), // agora está no horário de Brasília
+    'total' => $valorTotal,
+    'id_pagamento' => $dados["id_pagamento"],
+    'metodo_pagamento' => $metodoPay[0],
+    'itens' => []
+];
+
+foreach ($itens as $item) {
+    $pedido['itens'][] = [
+        'pizza_id' => $item['id'],
+        'quantidade' => $item['quantidade'],
+        'tamanho' => $item['tamanho']
+    ];
+}
 
     return $response->json([
-        "dados" => $dados, 
-        "usuario_id" => $usuarioId
+        "pedido" => $pedido, 
     ]);
 }
 private function lookpreco($itens)
