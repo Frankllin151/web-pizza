@@ -17,6 +17,8 @@ use App\Models\PedidoItens;
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Payment\PaymentClient;
 use MercadoPago\Exceptions\MPApiException;
+use MercadoPago\Exceptions\MPException;
+
 class ProdutoPizzaController extends BaseController
 {
     protected User $userModel;
@@ -307,7 +309,8 @@ foreach ($itens as $item) {
     $pedido['itens'] = $itens;
 
     return $response->json([
-        "pedido" => $pedido, 
+         "dados" => $dados, 
+        "usuario_id" => $usuarioId
     ]);
 }
 private function lookpreco($itens)
@@ -467,9 +470,43 @@ extract($data); // cria variáveis com base nas chaves
 }
 public function checkStatusPay(Request $request, Response $response)
 {
-   
+ // Inicializa SDK do Mercado Pago
+ MercadoPagoConfig::setAccessToken($_ENV["MERCADO_TOKEN_PAY"]);
+ $pedidoModel = new Pedido();
+
+    // Busca todos os pedidos pendentes ou que não estão "approved"
+    $pedidos = $pedidoModel->findWhere("status != :status AND id_pagamento IS NOT NULL", [
+        ":status" => "approved"
+    ]);
+
+    $client = new PaymentClient();
+    $atualizados = [];
+
+    foreach ($pedidos as $pedido) {
+        try {
+            $payment = $client->get($pedido['id_pagamento']);
+
+            if ($payment && $payment->status !== $pedido['status']) {
+                $pedidoModel->update($pedido['id'], [
+                    'status' => $payment->status
+                ]);
+
+                $atualizados[] = [
+                    'pedido_id' => $pedido['id'],
+                    'id_pagamento' => $pedido['id_pagamento'],
+                    'status_antigo' => $pedido['status'],
+                    'novo_status' => $payment->status
+                ];
+            }
+        } catch (MPApiException $e) {
+            // Você pode logar o erro se quiser
+            continue;
+        }
+    }
+
     return $response->json([
-        'id_pagamento' =>"todo",
-        ]);
+        'mensagem' => count($atualizados) . ' pedidos atualizados.',
+        'atualizados' => $atualizados
+    ]);
 }
 }
