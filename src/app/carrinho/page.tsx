@@ -9,10 +9,17 @@ import ItensCarrinho from '../componentes/carrinho/ItensCarrinho';
 import DadosEntrega from '../componentes/carrinho/DadosEntrega';
 import { DadosEntregas } from '../type/DadosEntrega';
 import { z } from "zod";
+import { loadMercadoPago } from '@mercadopago/sdk-js';
 // Interface para o evento personalizado
 interface CarrinhoAtualizadoEvent extends Event {
   detail: { carrinho: ItemCarrinho[] };
 }
+declare global {
+  interface Window {
+    MercadoPago: any;
+  }
+}
+
 
 // Interface para dados de entrega
 
@@ -25,6 +32,7 @@ const METODOS_PAGAMENTO = [
 ];
 
 export default function Carrinho() {
+  const [mp, setMp] = useState<any>(null);
   const [itens, setItens] = useState<ItemCarrinho[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [etapaAtual, setEtapaAtual] = useState<number>(1);
@@ -79,15 +87,34 @@ const  dataPayAndEntrega = {
  }))
 }
 
+// Inicializar o SDK do Mercado Pago
+ useEffect(() => {
+    async function init() {
+      await loadMercadoPago();
+      const mercadoPago = new window.MercadoPago(process.env.NEXT_PUBLIC_PUBLIC_KEY, {
+        locale: 'pt-BR',
+      });
+      setMp(mercadoPago);
+    }
+
+    init();
+  }, []);
+
+useEffect(() => {
+  if (mp) {
+    console.log('MercadoPago carregado:', mp);
+  } else {
+    console.log('MercadoPago ainda não carregado');
+  }
+}, [mp]);
+
+
 
 const schema = z.object({
   nomeCartao: z.string().min(1, "Nome é obrigatório"),
   numeroCartao: z
     .string()
     .regex(/^\d{16}$/, "Número do cartão deve ter 16 dígitos"),
-   validade: z
-    .string()
-    .regex(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Validade deve estar no formato MM/AA"),
  cvv: z
     .string()
     .regex(/^\d{3,4}$/, "CVV deve ter 3 ou 4 dígitos"),
@@ -207,8 +234,10 @@ if(metodoPagamento === "dinheiro"){
 
   // Função para finalizar pedido
   const finalizarPedido = async () => {
+    if(metodoPagamento === "pix"){
+
     // Aqui você conectaria com sua API para processar o pedido
-    alert(`Pedido finalizado com sucesso! Total: R$ ${total.toFixed(2)}`);
+   
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     
    try{
@@ -233,6 +262,30 @@ if(metodoPagamento === "dinheiro"){
   console.error('Erro ao finalizar pedido:', error);
    }
     
+    }
+
+    if(metodoPagamento === "cartao"){
+      // Aqui você pode integrar com a API de pagamento
+     const [month, year] = dadosEntrega.validade.split('/');
+
+    const cardData = {
+      cardNumber: dadosEntrega.numeroCartao,
+      cardholderName: dadosEntrega.nomeCartao,
+      securityCode: dadosEntrega.cvv,
+      identificationType: 'CPF',
+      identificationNumber: dadosEntrega.cpf,
+      expirationMonth: month,
+      expirationYear: '20' + year,
+    };
+    try {
+      const result = await mp?.createCardToken(cardData);
+
+      console.log('Token do cartão:', result);
+      
+    } catch (error) {
+      console.error('Erro no createCardToken:', error);
+    }
+    }
   
     
   // Limpar carrinho após finalização
@@ -419,6 +472,20 @@ if(metodoPagamento === "dinheiro"){
             {errosEntrega.cvv && 
                 <p className="text-red-500">{errosEntrega.cvv}</p>}
         </div>
+        <div>
+        <InputLabel htmlFor="cpf">CPF:</InputLabel>
+        <TextInput
+          id="cpf"
+          name="cpf"
+          type="text"
+          placeholder="Digite o CPF"
+          value={dadosEntrega.cpf}
+          onChange={handleInputChange}
+          className="w-full mt-1 text-white"
+        />
+          {errosEntrega.nomeCartao && 
+                <p className="text-red-500">{errosEntrega.nomeCartao}</p>}
+      </div>
       </div>
     </div>
   </div>

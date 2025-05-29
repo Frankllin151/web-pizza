@@ -7,7 +7,7 @@
 use App\Core\App;
 use App\Controllers\Api\UserApiController;
 use App\Controllers\Api\ProdutoPizzaController;
-
+use App\Controllers\Api\PagamentoController;
 $router = App::getInstance()->getRouter();
 
 $router->get("/api", function($request, $response) {
@@ -40,6 +40,6 @@ $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-senha",[Us
 $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-dados", [UserApiController::class, "updateDados"]);
 
 // Delivey ou Entrega
-$router->post("/api/dado/user-entrega-pay",[ProdutoPizzaController::class,"DadoPayUser"]);
-$router->post("/api/dado/pay-all", [ProdutoPizzaController::class, "PayAll"]);
-$router->get("/api/check-status-pay", [ProdutoPizzaController::class, "checkStatusPay"]);
+$router->post("/api/dado/user-entrega-pay",[PagamentoController::class,"DadoPayUser"]);
+$router->post("/api/dado/pay-all", [PagamentoController::class, "PayAll"]);
+$router->get("/api/check-status-pay", [PagamentoController::class, "checkStatusPay"]);
