@@ -266,22 +266,62 @@ if(metodoPagamento === "dinheiro"){
 
     if(metodoPagamento === "cartao"){
       // Aqui você pode integrar com a API de pagamento
-     const [month, year] = dadosEntrega.validade.split('/');
-
+     const validade = dadosEntrega.validade.trim(); // remove espaços
+   
+const [monthStr, yearStr] = validade.split('/').map(v => v.trim());
+const month = parseInt(monthStr, 10); // Converter para número
+const year = parseInt('20' + yearStr, 10); 
+    const cpfSomenteNumeros = dadosEntrega.cpf.replace(/\D/g, '');
+     const bin = dadosEntrega.numeroCartao.slice(0, 6);
+    
+     
+     
     const cardData = {
       cardNumber: dadosEntrega.numeroCartao,
       cardholderName: dadosEntrega.nomeCartao,
       securityCode: dadosEntrega.cvv,
       identificationType: 'CPF',
-      identificationNumber: dadosEntrega.cpf,
-      expirationMonth: month,
-      expirationYear: '20' + year,
+      identificationNumber: cpfSomenteNumeros,
+      expirationMonth: 11,
+      expirationYear: 2030
     };
+  
+
+
+    
     try {
       const result = await mp?.createCardToken(cardData);
-
-      console.log('Token do cartão:', result);
-      
+       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+     console.log(result);
+     
+      const response = await mp.getPaymentMethods({ bin });
+const payment_method_id = response.results[0].id; // <- 'visa', 'master', etc.
+const payment_method_name = response.results[0].name;
+    //  console.log("Bandeira do cartão:", payment_method_name, "ID:", payment_method_id);
+  const responseCartaophp =   await fetch(`${apiUrl}/api/dado/pay-cartao`,{
+    method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    token: result.id,
+    transaction_amount: total,
+    description: 'Web-pizza',
+    installments: 1,
+    payment_method_id: payment_method_id,
+    issuer_id: "", // Opcional, se tiver
+    payer: {
+      email: dadosEntrega.email,
+      identification: {
+        type: 'CPF',
+        number:cpfSomenteNumeros, // CPF somente com números
+      },
+    },
+  }),
+  });
+  const data = await responseCartaophp.json();
+  console.log("resposta do  backend: "+ JSON.stringify(data,null , 2));
+  
     } catch (error) {
       console.error('Erro no createCardToken:', error);
     }

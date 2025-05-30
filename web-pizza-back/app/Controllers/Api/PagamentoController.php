@@ -145,7 +145,7 @@ $dados = [];
     'status' => $dados["status"],
     'data' => date("Y-m-d H:i:s"), // agora está no horário de Brasília
     'total' => $valorTotal,
-    'id_pagamento' => $dados["id_pagamento"],
+    'id_pagamento' => $dados["id_pagamento"]  ?? null,
     'metodo_pagamento' => $metodoPay[0],
     'itens' => []
 ];
@@ -370,4 +370,45 @@ public function checkStatusPay(Request $request, Response $response)
     ]);
 }
 
+public function cartaoPay(Request $request, Response $response)
+{
+     // Configure sua Public e Access Token
+    MercadoPagoConfig::setAccessToken($_ENV["MERCADO_TOKEN_PAY"]);
+
+    $data = $request->getBody(); // pega os dados do JSON do frontend
+
+    try {
+        $client = new PaymentClient();
+
+        $payment = $client->create([
+            "transaction_amount" =>round((float) $data["transaction_amount"], 2),
+            "token" => $data["token"],
+            "description" => $data["description"],
+            "installments" => (int)$data["installments"],
+            "payment_method_id" => $data["payment_method_id"],
+            "payer" => [
+                "email" => $data["payer"]["email"],
+                "identification" => [
+                    "type" => $data["payer"]["identification"]["type"],
+                    "number" => $data["payer"]["identification"]["number"]
+                ]
+            ]
+        ]);
+
+        return $response->json([
+            "status" => "success",
+            "payment" => $payment
+        ]);
+    } catch (MPApiException $e) {
+        return $response->json([
+            "status" => "error",
+            "message" => $e->getApiResponse()->getContent()
+        ], 400);
+    } catch (MPApiException $e) {
+        return $response->json([
+            "status" => "error",
+            "message" => $e->getMessage()
+        ], 500);
+    }
+}
 }

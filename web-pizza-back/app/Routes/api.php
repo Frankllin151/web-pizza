@@ -42,4 +42,8 @@ $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-dados", [U
 // Delivey ou Entrega
 $router->post("/api/dado/user-entrega-pay",[PagamentoController::class,"DadoPayUser"]);
 $router->post("/api/dado/pay-all", [PagamentoController::class, "PayAll"]);
+$router->post("/api/dado/pay-cartao", [PagamentoController::class, "cartaoPay"]);
+
+
+
 $router->get("/api/check-status-pay", [PagamentoController::class, "checkStatusPay"]);
