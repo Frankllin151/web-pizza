@@ -124,7 +124,7 @@ public function PayAll(Request $request , Response $response)
    $metodoPay = $data['pagamento']["metodo"];
    $valorTotal = $data["pagamento"]['total'];
    $itens  = $data["itens"];
-   $itens = $this->lookpreco($itens);
+   $itens = $this->lookpreco($itens); 
   $metodoPay = is_array($metodoPay) ? $metodoPay : [$metodoPay];
 
 $dados = [];
@@ -376,7 +376,6 @@ public function cartaoPay(Request $request, Response $response)
     MercadoPagoConfig::setAccessToken($_ENV["MERCADO_TOKEN_PAY"]);
 
     $data = $request->getBody(); // pega os dados do JSON do frontend
-
     try {
         $client = new PaymentClient();
 

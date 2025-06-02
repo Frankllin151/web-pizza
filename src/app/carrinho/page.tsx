@@ -10,6 +10,7 @@ import DadosEntrega from '../componentes/carrinho/DadosEntrega';
 import { DadosEntregas } from '../type/DadosEntrega';
 import { z } from "zod";
 import { loadMercadoPago } from '@mercadopago/sdk-js';
+import PagamentoCartao from '../componentes/carrinho/PagamentoCartao';
 // Interface para o evento personalizado
 interface CarrinhoAtualizadoEvent extends Event {
   detail: { carrinho: ItemCarrinho[] };
@@ -264,68 +265,7 @@ if(metodoPagamento === "dinheiro"){
     
     }
 
-    if(metodoPagamento === "cartao"){
-      // Aqui você pode integrar com a API de pagamento
-     const validade = dadosEntrega.validade.trim(); // remove espaços
-   
-const [monthStr, yearStr] = validade.split('/').map(v => v.trim());
-const month = parseInt(monthStr, 10); // Converter para número
-const year = parseInt('20' + yearStr, 10); 
-    const cpfSomenteNumeros = dadosEntrega.cpf.replace(/\D/g, '');
-     const bin = dadosEntrega.numeroCartao.slice(0, 6);
-    
-     
-     
-    const cardData = {
-      cardNumber: dadosEntrega.numeroCartao,
-      cardholderName: dadosEntrega.nomeCartao,
-      securityCode: dadosEntrega.cvv,
-      identificationType: 'CPF',
-      identificationNumber: cpfSomenteNumeros,
-      expirationMonth: 11,
-      expirationYear: 2030
-    };
   
-
-
-    
-    try {
-      const result = await mp?.createCardToken(cardData);
-       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-     console.log(result);
-     
-      const response = await mp.getPaymentMethods({ bin });
-const payment_method_id = response.results[0].id; // <- 'visa', 'master', etc.
-const payment_method_name = response.results[0].name;
-    //  console.log("Bandeira do cartão:", payment_method_name, "ID:", payment_method_id);
-  const responseCartaophp =   await fetch(`${apiUrl}/api/dado/pay-cartao`,{
-    method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    token: result.id,
-    transaction_amount: total,
-    description: 'Web-pizza',
-    installments: 1,
-    payment_method_id: payment_method_id,
-    issuer_id: "", // Opcional, se tiver
-    payer: {
-      email: dadosEntrega.email,
-      identification: {
-        type: 'CPF',
-        number:cpfSomenteNumeros, // CPF somente com números
-      },
-    },
-  }),
-  });
-  const data = await responseCartaophp.json();
-  console.log("resposta do  backend: "+ JSON.stringify(data,null , 2));
-  
-    } catch (error) {
-      console.error('Erro no createCardToken:', error);
-    }
-    }
   
     
   // Limpar carrinho após finalização
@@ -387,6 +327,17 @@ const payment_method_name = response.results[0].name;
   }, [dadosEntrega.email]);
 
 
+ const handlePaymentSuccess = (data:any) => {
+    console.log('Pagamento aprovado!', data);
+    // Redirecionar para página de sucesso
+    // Salvar pedido no banco, etc.
+  };
+
+  const handlePaymentError = (error:any) => {
+    console.error('Erro no pagamento:', error);
+    // Mostrar mensagem de erro para o usuário
+    alert('Erro no pagamento: ' + error.message);
+  };
   
   // Renderizar etapa atual
   const renderizarEtapa = () => {
@@ -452,82 +403,20 @@ const payment_method_name = response.results[0].name;
     </p>
 
     {/* Inputs para pagamento via cartão */}
-    <div className="space-y-4">
-      <div>
-        <InputLabel htmlFor="nomeCartao">Nome no Cartão</InputLabel>
-        <TextInput
-          id="nomeCartao"
-          name="nomeCartao"
-          type="text"
-          placeholder="Digite o nome como está no cartão"
-          value={dadosEntrega.nomeCartao}
-          onChange={handleInputChange}
-          className="w-full mt-1 text-white"
-        />
-          {errosEntrega.nomeCartao && 
-                <p className="text-red-500">{errosEntrega.nomeCartao}</p>}
-      </div>
-
-      <div>
-        <InputLabel htmlFor="numeroCartao">Número do Cartão</InputLabel>
-        <TextInput
-          id="numeroCartao"
-          name="numeroCartao"
-          type="text"
-          placeholder="0000 0000 0000 0000"
-         value={dadosEntrega.numeroCartao}
-          onChange={handleInputChange}
-          className="w-full mt-1 text-white"
-        />
-          {errosEntrega.numeroCartao && 
-                <p className="text-red-500">{errosEntrega.numeroCartao}</p>}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <InputLabel htmlFor="validadeCartao">Validade</InputLabel>
-          <TextInput
-            id="validade"
-            name="validade"
-            type="text"
-            placeholder="MM/AA"
-            value={dadosEntrega.validade}
-            onChange={handleInputChange}
-            className="w-full mt-1 text-white"
-          />
-            {errosEntrega.validade && 
-                <p className="text-red-500">{errosEntrega.validade}</p>}
-        </div>
-        <div>
-          <InputLabel htmlFor="cvv">CVV</InputLabel>
-          <TextInput
-            id="cvv"
-            name="cvv"
-            type="text"
-            placeholder="123"
-           value={dadosEntrega.cvv}
-            onChange={handleInputChange}
-            className="w-full mt-1 text-white"
-          />
-            {errosEntrega.cvv && 
-                <p className="text-red-500">{errosEntrega.cvv}</p>}
-        </div>
-        <div>
-        <InputLabel htmlFor="cpf">CPF:</InputLabel>
-        <TextInput
-          id="cpf"
-          name="cpf"
-          type="text"
-          placeholder="Digite o CPF"
-          value={dadosEntrega.cpf}
-          onChange={handleInputChange}
-          className="w-full mt-1 text-white"
-        />
-          {errosEntrega.nomeCartao && 
-                <p className="text-red-500">{errosEntrega.nomeCartao}</p>}
-      </div>
-      </div>
-    </div>
+   <div className="space-y-4">
+    <PagamentoCartao 
+    total={total}
+      metodoPagamento={metodoPagamento}
+      itens={itens.map(item => ({
+    id: item.id,
+    quantidade: item.quantidade,
+    tamanho: item.tamanho
+  }))}
+        dadosEntrega={dadosEntrega}
+        onPaymentSuccess={handlePaymentSuccess}
+        onPaymentError={handlePaymentError}
+    />
+   </div>
   </div>
 }
                   
@@ -613,17 +502,17 @@ Copia codigo
 )}
 
                       </div>
-                      <div className='mt-3'>
-                       {!codigoPix ? (
-                        <Button
-    color="bg-[#F97316]"
-    className="w-full py-3 font-bold"
-    onClick={handleValidarCampos} 
-  >
-    Finalizar Pedido
-  </Button>
-) : null}
-                      </div>
+                      <div className="mt-3">
+  {!codigoPix && metodoPagamento !== 'cartao' ? (
+    <Button
+      color="bg-[#F97316]"
+      className="w-full py-3 font-bold"
+      onClick={handleValidarCampos}
+    >
+      Finalizar Pedido
+    </Button>
+  ) : null}
+</div>
                     </div>
                   </div>
                 </div>
