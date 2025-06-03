@@ -20,11 +20,20 @@ class Response
     public function json($data, int $statusCode = 200): void
     {
        
-            $this->setStatusCode($statusCode);
-            CorsMiddleware::handle();
-            header('Content-Type: application/json');
-            echo json_encode($data);
-            exit;
+          $this->setStatusCode($statusCode);
+    CorsMiddleware::handle();
+    header('Content-Type: application/json');
+
+    $json = json_encode($data);
+
+    if ($json === false) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Erro ao codificar JSON']);
+        exit;
+    }
+
+    echo $json;
+    exit;
         
        
     }

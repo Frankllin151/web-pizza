@@ -123,16 +123,22 @@ public function PayAll(Request $request , Response $response)
 
    $metodoPay = $data['pagamento']["metodo"];
    $valorTotal = $data["pagamento"]['total'];
-   $itens  = $data["itens"];
+   $cartao = $data["pagamento"]["cartao"]  ?? null;
+  
+  $itens  = $data["itens"];
    $itens = $this->lookpreco($itens); 
   $metodoPay = is_array($metodoPay) ? $metodoPay : [$metodoPay];
 
 $dados = [];
     foreach($metodoPay as $metodo){
-        $dados = $this->montarDadosPagamento($metodo,  $itens, $valorTotal , $usuarioId);
+        $dados = $this->montarDadosPagamento($metodo,  
+        $itens, 
+        $valorTotal 
+        , $usuarioId, $cartao );
 
     }
-   
+  
+ 
     // Aqui você pode continuar o processamento do pagamento,
     // usando $usuarioId se precisar
     date_default_timezone_set('America/Sao_Paulo');
@@ -142,13 +148,23 @@ $dados = [];
     $pedido = [
     'cliente' => $usuarioId[0]["nome"],
     'user_id' => $usuarioId[0]["id"],
-    'status' => $dados["status"],
+    'status' => $dados["status"] ?? null ,
     'data' => date("Y-m-d H:i:s"), // agora está no horário de Brasília
     'total' => $valorTotal,
     'id_pagamento' => $dados["id_pagamento"]  ?? null,
     'metodo_pagamento' => $metodoPay[0],
     'itens' => []
 ];
+if($pedido["status"] === "rejected" || $pedido["status"] === ""  || $pedido["status"] === null 
+|| $dados["erro"] ){
+    return $response->json([
+         "dados" => $dados, 
+        "usuario_id" => $usuarioId
+    ]);
+   
+}
+
+
 // Salva pedido e pega o ID do pedido criado
     $pedidoId = $pedidoModel->create($pedido);
 
@@ -165,6 +181,7 @@ foreach ($itens as $item) {
 
     return $response->json([
          "dados" => $dados, 
+         "deu-certo" => "ok",
         "usuario_id" => $usuarioId
     ]);
 }
@@ -187,7 +204,7 @@ private function lookpreco($itens)
  unset($item);
 return  $itens;
 }
-private function montarDadosPagamento($metodo, $itens, $valorTotal, $usuarioId)
+private function montarDadosPagamento($metodo, $itens, $valorTotal, $usuarioId, $cartao)
 {
     switch($metodo) {
         case "pix":
@@ -195,7 +212,7 @@ private function montarDadosPagamento($metodo, $itens, $valorTotal, $usuarioId)
         case "dinheiro":
             return $this->montarPagamentoDinheiro($itens, $valorTotal);
         case "cartao":
-            return $this->montarPagamentoCartao($itens,$valorTotal);
+            return $this->montarPagamentoCartao($itens,$valorTotal, $cartao);
         default: 
             throw new \Exception("Método de pagamento inválido: {$metodo}");
     }
@@ -238,21 +255,48 @@ try {
 private function montarPagamentoDinheiro(array $itens , string $valorTotal): array
 {
     return [
-        'tipo' => 'dinheiro',
-        'valor' => $valorTotal ,
-        'itens' => $itens
+       "status" => "pending",
+            "id_pagamento" => null,
+            "detalhes" => "Dinheiro"
     ];
 }
 
-private function montarPagamentoCartao(array $itens, string $valorTotal): array
+private function montarPagamentoCartao(array $itens, string $valorTotal, array  $cartao): array
 {
-    return [
-        'tipo' => 'cartao',
-        'bandeira' => 'Visa',
-        'parcelas' =>1,
-        'valor' => $valorTotal,
-        'itens' => $itens
-    ];
+   // Configure sua Public e Access Token
+    MercadoPagoConfig::setAccessToken($_ENV["MERCADO_TOKEN_PAY"]);
+
+    $data = $cartao;
+
+    try {
+        $client = new PaymentClient();
+
+        $payment = $client->create([
+            "transaction_amount" => round((float) $data["transaction_amount"], 2),
+            "token" => $data["token"],
+            "description" => $data["description"],
+            "installments" => (int)$data["installments"],
+            "payment_method_id" => $data["payment_method_id"],
+            "payer" => [
+                "email" => $data["payer"]["email"],
+                "identification" => [
+                    "type" => $data["payer"]["identification"]["type"],
+                    "number" => $data["payer"]["identification"]["number"]
+                ]
+            ]
+        ]);
+
+        return [
+            "status" => $payment->status,
+            "id_pagamento" => $payment->id,
+            "detalhes" => $payment
+        ];
+    } catch (MPApiException $e) {
+        return [
+            "erro" => "Erro na API do Mercado Pago",
+            "mensagem" => $e->getApiResponse()->getContent()
+        ];
+    } 
 }
 
 
@@ -372,42 +416,6 @@ public function checkStatusPay(Request $request, Response $response)
 
 public function cartaoPay(Request $request, Response $response)
 {
-     // Configure sua Public e Access Token
-    MercadoPagoConfig::setAccessToken($_ENV["MERCADO_TOKEN_PAY"]);
-
-    $data = $request->getBody(); // pega os dados do JSON do frontend
-    try {
-        $client = new PaymentClient();
-
-        $payment = $client->create([
-            "transaction_amount" =>round((float) $data["transaction_amount"], 2),
-            "token" => $data["token"],
-            "description" => $data["description"],
-            "installments" => (int)$data["installments"],
-            "payment_method_id" => $data["payment_method_id"],
-            "payer" => [
-                "email" => $data["payer"]["email"],
-                "identification" => [
-                    "type" => $data["payer"]["identification"]["type"],
-                    "number" => $data["payer"]["identification"]["number"]
-                ]
-            ]
-        ]);
-
-        return $response->json([
-            "status" => "success",
-            "payment" => $payment
-        ]);
-    } catch (MPApiException $e) {
-        return $response->json([
-            "status" => "error",
-            "message" => $e->getApiResponse()->getContent()
-        ], 400);
-    } catch (MPApiException $e) {
-        return $response->json([
-            "status" => "error",
-            "message" => $e->getMessage()
-        ], 500);
-    }
+     
 }
 }

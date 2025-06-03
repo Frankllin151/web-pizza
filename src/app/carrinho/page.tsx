@@ -156,11 +156,12 @@ if(metodoPagamento === "pix"){
    finalizarPedido();
 }
 if(metodoPagamento === "dinheiro"){
-   finalizarPedido();
+   finalizaPaYPedidoDinheiro()
 }
   // Nenhum erro: limpa e avança
  
 };
+
 
 
  
@@ -276,6 +277,30 @@ if(metodoPagamento === "dinheiro"){
    // setEtapaAtual(1);  
     
   };
+
+const finalizaPaYPedidoDinheiro = async () => {
+
+    // Aqui você conectaria com sua API para processar o pedido
+   
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    
+   try{
+ const response =  await fetch(`${apiUrl}/api/dado/pay-all`, {
+  method: "POST",
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify(dataPayAndEntrega)
+ })
+ if(!response.ok){
+    throw new Error(`Erro na requisição: ${response}`);
+ }
+  const dataPay = await response.json();
+  console.log(dataPay);
+   } catch(error){
+  console.error('Erro ao finalizar pedido dinheiro:', error);
+   }
+}
 
   
   

@@ -17,7 +17,6 @@ export default function PagamentoCartao({ total,
   const [mp, setMp] = useState<any>(null);
   const [cardForm, setCardForm] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-console.log(itens);
 
 
   // Inicializar o SDK do Mercado Pago
@@ -126,6 +125,8 @@ console.log(itens);
   quantidade: item.quantidade,
   tamanho: item.tamanho,
 }));
+console.log(token);
+
 const dataPayAndEntrega = {
   cliente: {
     nome: dadosEntrega.nome,
@@ -142,23 +143,31 @@ const dataPayAndEntrega = {
     metodo: metodoPagamento,
     total: total,
     cartao: {
-      token,
-      installments,
-      issuer_id,
-      payment_method_id,
-      email,
-      identificationNumber,
-      identificationType
+    token,
+    issuer_id,
+    payment_method_id,
+    transaction_amount: Number(amount),
+    installments: Number(installments),
+    description: "Pedido Web-Pizza",
+    payer: {
+    email,
+    identification: {
+      type: identificationType,
+      number: identificationNumber,
+                  },
+                },
     }
   },
   itens: itensFormatados
 };
 
+console.log(dataPayAndEntrega);
+
 
 
             // Enviar para o backend
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const response = await fetch(`${apiUrl}/api/dado/pay-cartao`, {
+            const response = await fetch(`${apiUrl}/api/dado/pay-all`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -167,17 +176,20 @@ const dataPayAndEntrega = {
             });
 
             const data = await response.json();
-           console.log(data);
+          
            
 
-            if (data.status === "success") {
-              onPaymentSuccess(data);
-            } else {
-              onPaymentError(data);
-            }
+          console.log(data);
+          
+          if(data.dados.status === "rejected"){
+alert("Seu cartão foi rejeitado");
+          } else{
+            alert("Pagamento concluido")
+          }
           } catch (error) {
-            console.error("Erro no pagamento:", error);
+           console.error("Erro no pagamento:", error);
             onPaymentError({ message: "Erro interno no pagamento" });
+            
           } finally {
             setIsLoading(false);
           }
