@@ -155,8 +155,7 @@ $dados = [];
     'metodo_pagamento' => $metodoPay[0],
     'itens' => []
 ];
-if($pedido["status"] === "rejected" || $pedido["status"] === ""  || $pedido["status"] === null 
-|| $dados["erro"] ){
+if($pedido["status"] === "rejected" || $pedido["status"] === ""  || $pedido["status"] === null  ){
     return $response->json([
          "dados" => $dados, 
         "usuario_id" => $usuarioId

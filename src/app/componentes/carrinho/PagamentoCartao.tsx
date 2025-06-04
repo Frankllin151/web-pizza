@@ -161,9 +161,8 @@ const dataPayAndEntrega = {
   itens: itensFormatados
 };
 
-console.log(dataPayAndEntrega);
-
-
+   const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 10000);
 
             // Enviar para o backend
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -174,7 +173,7 @@ console.log(dataPayAndEntrega);
               },
               body: JSON.stringify(dataPayAndEntrega),
             });
-
+  clearTimeout(timeoutId);
             const data = await response.json();
           
            
@@ -183,8 +182,8 @@ console.log(dataPayAndEntrega);
           
           if(data.dados.status === "rejected"){
 alert("Seu cartão foi rejeitado");
-          } else{
-            alert("Pagamento concluido")
+          } else if(data.dados.erro){
+            alert("Error api do mercado pago")
           }
           } catch (error) {
            console.error("Erro no pagamento:", error);
