@@ -296,7 +296,10 @@ const finalizaPaYPedidoDinheiro = async () => {
     throw new Error(`Erro na requisição: ${response}`);
  }
   const dataPay = await response.json();
-  console.log(dataPay);
+  
+   if(dataPay.dados.status === "pending"){
+    alert("Aguarde sua pizza chega no seu endereço")
+   }
    } catch(error){
   console.error('Erro ao finalizar pedido dinheiro:', error);
    }
