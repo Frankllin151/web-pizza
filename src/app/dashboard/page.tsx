@@ -5,6 +5,19 @@ import { OverviewSection, OrdersSection, ProductsSection , ReportsSection, AddPr
 
 
 export default function Dashboard() {
+   const dadosUsuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+
+const token = localStorage.getItem('token');
+console.log(token);
+
+
+if(token === "" || !token){
+   window.location.href = "/login";
+}
+if(dadosUsuario.info.tipo !== "admin"){
+  window.location.href = "/";
+}
   // Estado para controlar qual seção está ativa
   const [activeSection, setActiveSection] = useState('overview');
 

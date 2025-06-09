@@ -15,13 +15,48 @@ export default function LoginPage() {
  } = useForm<LoginFormInputs>({
   resolver:zodResolver(loginSchema)
  })
- const onSubmit = (data: LoginFormInputs) => {
-  console.log(`Email: ${data.email} 
- Senha: ${data.password}     
-checkbox: ${data.remember}   
- `);
-  
- }
+
+ const onSubmit = async (data: LoginFormInputs) => {
+  try {
+    const response = await fetch("http://localhost:8181/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: data.email,
+        senha: data.senha,
+      }),
+    });
+
+    if (!response.ok) {
+      alert("Email ou senha inválidos!");
+      console.log(response);
+      
+      return;
+    }
+
+    const result = await response.json();
+    // Salva todos os dados do usuário no localStorage
+    //localStorage.setItem("user", JSON.stringify(result));
+    //localStorage.setItem("token", JSON.stringify())
+    if(result.message === "Login realizado com sucesso."){
+       // Salva todos os dados do usuário no localStorage
+   console.log(result);
+   
+       localStorage.setItem("user", JSON.stringify(result.user));
+    localStorage.setItem("token", JSON.stringify(result.token));
+    // Exemplo: redirecionar para a home após login
+ ///window.location.href = "/minha-conta";
+    }
+
+    
+
+  } catch (error) {
+    alert("Erro ao conectar com o servidor!");
+    console.error(error);
+  }
+};
 
 
   return (
@@ -54,10 +89,10 @@ checkbox: ${data.remember}
             placeholder="Digite sua senha"
             id="password"
             className="w-full mt-1"
-            {...register("password")}
+            {...register("senha")}
           />
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+          {errors.senha && (
+            <p className="text-red-500 text-sm mt-1">{errors.senha.message}</p>
           )}
         </div>
           </div>

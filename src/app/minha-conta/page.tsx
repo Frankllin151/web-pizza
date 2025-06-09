@@ -25,17 +25,29 @@ interface Pedido {
 }
 
 export default function MinhaConta() {
+  const dadosUsuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+
+
+const token = localStorage.getItem('token');
+
+
+
+if(token === "" || !token){
+   window.location.href = "/login";
+}
+
   // Estados para os dados do usuário
   const [usuario, setUsuario] = useState<Usuario>({
-    nome: '',
-    email: '',
-    cpf: '',
-    telefone: '',
-    endereco: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: ''
+    nome: dadosUsuario.info.nome,
+    email: dadosUsuario.info.email,
+    cpf:dadosUsuario.dados.cpf,
+    telefone: dadosUsuario.dados.telefone,
+    endereco: dadosUsuario.dados.rua_avenida,
+    numero: dadosUsuario.dados.numero,
+    complemento: dadosUsuario.dados.complemento,
+    bairro: dadosUsuario.dados.bairro,
+    cidade: dadosUsuario.dados.cidade
   });
 
   // Estado para edição dos dados
@@ -65,7 +77,7 @@ export default function MinhaConta() {
   // Salvar alterações nos dados do usuário
   const salvarAlteracoes = () => {
     setUsuario({...dadosEditados});
-    localStorage.setItem('usuario', JSON.stringify(dadosEditados));
+   
     setEditando(false);
     
     // Exibir notificação de sucesso

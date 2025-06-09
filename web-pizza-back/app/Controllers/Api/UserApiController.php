@@ -121,42 +121,50 @@ class UserApiController extends BaseController
 exit;
  }
 
+public function login(Request $request, Response $response)
+{
+    $data = $request->getBody();
+    $email = $data["email"] ?? null;
+    $password = $data["senha"] ?? null;
 
- public function login(Request $request, Response $response)
- {
- $data = $request->getBody();
-  
- $email = $data["email"] ?? null; 
- $password = $data["senha"] ?? null;
+    if (!$email || !$password) {
+        return $response->json(['error' => 'Email e senha são obrigatórios.'], 400);
+    }
 
- if(!$email || !$password){
-  return $response->json(['error' => 'Email e senha são obrigatórios.'], 400);
-  
- }
+    $user = $this->userModel->authenticate($email, $password);
 
- $user = $this->userModel->authenticate($email, $password);
+    if (!$user) {
+        return $response->json(['error' => 'Credenciais inválidas.'], 401);
+    }
 
- if (!$user) {
-  return $response->json(['error' => 'Credenciais inválidas.'], 401);
-  
+    // Se já existe um token, usa ele; senão, gera um novo
+    $token = $user[0]['token'] ?? null;
+    if (!$token) {
+        $token = bin2hex(random_bytes(32));
+        $this->userModel->update($user[0]['id'], ['token' => $token]);
+    }
+
+    // Busca dados complementares do usuário
+    $dadosUserModel = new \App\Models\DadosUsers();
+    $dadosUser = $dadosUserModel->findWhere('user_id = :user_id', [':user_id' => $user[0]['id']]);
+    
+    // Remove a senha antes de responder
+    unset($user[0]['senha']);
+
+    // Monta o retorno com os dados do usuário e dados complementares
+    $userData = [
+        'info' => $user[0],
+        'dados' => $dadosUser[0] ?? null
+    ];
+
+    $request->user = $userData;
+    return $response->json([
+        'message' => 'Login realizado com sucesso.',
+        'user' => $request->user,
+        'token' => $token
+    ]);
 }
 
- // Gera token simples (pode usar UUID, random_bytes etc.)
- $token = bin2hex(random_bytes(32));
-
- // Salva token no banco
- $this->userModel->update($user[0]['id'], ['token' => $token]);
-
- // Remove a senha antes de responder
- unset($user[0]['senha']);
- $request->user = $user;
- return $response->json([
-     'message' => 'Login realizado com sucesso.',
-     'user' => $request->user,
-     'token' => $token
- ]);
-
-}
 public function forGetPassword(Request $request , Response $response)
 {
  $data = $request->getBody();
