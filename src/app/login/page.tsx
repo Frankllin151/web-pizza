@@ -18,7 +18,8 @@ export default function LoginPage() {
 
  const onSubmit = async (data: LoginFormInputs) => {
   try {
-    const response = await fetch("http://localhost:8181/api/login", {
+     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(`${apiUrl}/api/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -47,7 +48,7 @@ export default function LoginPage() {
        localStorage.setItem("user", JSON.stringify(result.user));
     localStorage.setItem("token", JSON.stringify(result.token));
     // Exemplo: redirecionar para a home após login
- ///window.location.href = "/minha-conta";
+ window.location.href = "/minha-conta";
     }
 
     

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ItemCarrinho } from '../type/ItemCarrinho';
 import Header from '../componentes/header';
 
+
 // Interfaces para tipagem
 interface Usuario {
   nome: string;
@@ -27,11 +28,10 @@ interface Pedido {
 export default function MinhaConta() {
   const dadosUsuario = JSON.parse(localStorage.getItem('user') || '{}');
 
+const token = JSON.parse(localStorage.getItem("token") || '""');
 
 
-const token = localStorage.getItem('token');
-
-
+console.log(token);
 
 if(token === "" || !token){
    window.location.href = "/login";
@@ -39,15 +39,15 @@ if(token === "" || !token){
 
   // Estados para os dados do usuário
   const [usuario, setUsuario] = useState<Usuario>({
-    nome: dadosUsuario.info.nome,
-    email: dadosUsuario.info.email,
-    cpf:dadosUsuario.dados.cpf,
-    telefone: dadosUsuario.dados.telefone,
-    endereco: dadosUsuario.dados.rua_avenida,
-    numero: dadosUsuario.dados.numero,
-    complemento: dadosUsuario.dados.complemento,
-    bairro: dadosUsuario.dados.bairro,
-    cidade: dadosUsuario.dados.cidade
+    nome: dadosUsuario.info.nome ??  "",
+    email: dadosUsuario.info.email ??  "",
+    cpf: dadosUsuario?.dados?.cpf ?? "",
+  telefone: dadosUsuario?.dados?.telefone ?? "",
+  endereco: dadosUsuario?.dados?.rua_avenida ?? "",
+  numero: dadosUsuario?.dados?.numero ?? "",
+  complemento: dadosUsuario?.dados?.complemento ?? "",
+  bairro: dadosUsuario?.dados?.bairro ?? "",
+  cidade: dadosUsuario?.dados?.cidade ?? ""
   });
 
   // Estado para edição dos dados
@@ -75,14 +75,52 @@ if(token === "" || !token){
   }, []);
 
   // Salvar alterações nos dados do usuário
-  const salvarAlteracoes = () => {
-    setUsuario({...dadosEditados});
-   
-    setEditando(false);
-    
-    // Exibir notificação de sucesso
-    alert('Dados atualizados com sucesso!');
+const salvarAlteracoes = async () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // Montar o body conforme o backend espera
+  const body = {
+    user_id: dadosUsuario.info.id,
+    nome_completo: dadosEditados.nome,
+    email: dadosEditados.email,
+    cpf: dadosEditados.cpf,
+    telefone: dadosEditados.telefone,
+    rua_avenida: dadosEditados.endereco,
+    numero: dadosEditados.numero,
+    complemento: dadosEditados.complemento,
+    bairro: dadosEditados.bairro,
+    cidade: dadosEditados.cidade,
   };
+console.log(body);
+
+  try {
+    const response = await fetch(`${apiUrl}/api/dashboard/atualizar-dados`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      
+      alert("Erro ao atualizar dados!");
+      return;
+    }
+
+    // Atualiza o estado local e exibe sucesso
+    setUsuario({ ...dadosEditados });
+    setEditando(false);
+    alert("Dados atualizados com sucesso!");
+    console.log(response);
+    
+  } catch (error) {
+    alert("Erro ao conectar com o servidor!");
+    console.error(error);
+  }
+};
 
   // Cancelar edição
   const cancelarEdicao = () => {
@@ -328,7 +366,7 @@ if(token === "" || !token){
                   <h3 className="text-lg font-medium text-gray-500">Você ainda não tem pedidos</h3>
                   <p className="text-gray-400 mt-2">Seus pedidos aparecerão aqui quando você fizer sua primeira compra.</p>
                   <button 
-                    onClick={() => window.location.href = '/cardapio'}
+                    onClick={() => window.location.href = '/'}
                     className="mt-6 px-6 py-2 bg-[#F97316] text-white rounded-md hover:bg-orange-600 transition-colors"
                   >
                     Ver Cardápio

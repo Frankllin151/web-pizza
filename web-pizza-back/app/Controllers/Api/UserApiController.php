@@ -301,7 +301,7 @@ public function atualizarSenha(Request $request, Response $response)
 public function updateDados(Request $request, Response $response)
 {
     $data = $request->getBody();
-
+  
     $validacao = $this->validarCampos($data, [
         'user_id',
         'nome_completo',
@@ -363,5 +363,6 @@ public function updateDados(Request $request, Response $response)
         'success' => true,
         'message' => 'Dados atualizados com sucesso.'
     ]);
+     
 }
 }
