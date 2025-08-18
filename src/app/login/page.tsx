@@ -5,7 +5,7 @@ import TextInput from "../componentes/TextInput";
 import { useForm } from "react-hook-form";
 import { loginSchema , LoginFormInputs} from "../type/LoginFormInputs";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import Link from "next/link";
 export default function LoginPage() {
 
  const {
@@ -114,7 +114,14 @@ export default function LoginPage() {
       className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-transform duration-300"
     ></div>
   </label>
-  <span className="ml-3 text-sm text-gray-600">Lembrar-me</span>
+ <div className="justify-between flex gap-2">
+ <span className="ml-3 text-sm text-gray-600">Lembrar-me</span>
+ <Link
+ href="/esquece-minha-senha.html"
+ >
+ <span className="ml-3 text-sm text-gray-600">Esqueci minha senha?</span>
+ </Link>
+ </div>
 </div>
      
        <div className="justify-center flex">

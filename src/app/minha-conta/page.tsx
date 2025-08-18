@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { ItemCarrinho } from '../type/ItemCarrinho';
 import Header from '../componentes/header';
-
-
+import Link from 'next/link';
+import Button from '../componentes/Button';
+import { useRouter } from 'next/navigation';
 // Interfaces para tipagem
 interface Usuario {
   nome: string;
@@ -28,14 +29,34 @@ interface Pedido {
 export default function MinhaConta() {
   const dadosUsuario = JSON.parse(localStorage.getItem('user') || '{}');
 
-const token = JSON.parse(localStorage.getItem("token") || '""');
+  const router = useRouter();
+  
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+ 
+  useEffect(() => {
+    // Este código só roda no navegador, após o componente ser montado
+    const storedToken = localStorage.getItem('token');
+    
+    // 1. Verifica se o token existe
+    if (!storedToken) {
+      // Se não houver token, redireciona para a página de login
+      router.push('/');
+    } else {
+      // 2. Se o token existir, armazena no estado e para o loading
+      setToken(storedToken);
+      setLoading(false);
+    }
+    
+  }, [router]);
 
-
-console.log(token);
-
-if(token === "" || !token){
-   window.location.href = "/login";
-}
+const handleLogout = () => {
+  // Remove o item "token" do localStorage
+  localStorage.removeItem("token");
+  
+  // Opcional: Redireciona o usuário para a página de login ou para a página inicial
+  window.location.href = "/login.html"; 
+};
 
   // Estados para os dados do usuário
   const [usuario, setUsuario] = useState<Usuario>({
@@ -183,6 +204,16 @@ console.log(body);
             <div className="p-6">
               <div className="flex justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-800">Informações Pessoais</h2>
+  <div className='flex  justify-between gap-2'>             
+<Link href="/">
+      <Button
+        color="bg-orange-500"
+        className="px-4 py-2 text-white rounded-md flex items-center"
+      >
+       
+        <span>Voltar</span>
+      </Button>
+    </Link>
                 {!editando ? (
                   <button 
                     onClick={() => setEditando(true)}
@@ -190,6 +221,7 @@ console.log(body);
                   >
                     Editar
                   </button>
+
                 ) : (
                   <div className="flex space-x-3">
                     <button 
@@ -204,8 +236,11 @@ console.log(body);
                     >
                       Salvar
                     </button>
+
                   </div>
                 )}
+  </div>
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -349,7 +384,18 @@ console.log(body);
                     <p className="text-gray-800">{usuario.cidade || 'Não informado'}</p>
                   )}
                 </div>
+           <div className='mt-8 flex justify-end'>
+ <Button
+      onClick={handleLogout}
+        color="bg-orange-500"
+        className="px-4 py-2 text-white rounded-md flex items-center"
+      >
+       
+        <span>Sair</span>
+      </Button>
+           </div>
               </div>
+            
             </div>
           )}
 

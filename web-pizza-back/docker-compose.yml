@@ -48,7 +48,7 @@ services:
   # Serviço phpMyAdmin
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin-app
+    container_name: phpmyadmin-web-pizza
     restart: unless-stopped
     ports:
       - "8282:80"

@@ -13,7 +13,7 @@ export default function Header({ onFiltroChange }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 const [filtro ,  SetFiltro] = useState("");
-
+const token = JSON.parse(localStorage.getItem("token") || '""');
 
 const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
   if (onFiltroChange) {
@@ -87,7 +87,20 @@ const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Botões de navegação (visíveis apenas em desktop) */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link href="/login.html">
+            {
+              token ?(
+<Link href="/minha-conta.html">
+      <Button
+        color="bg-black"
+        className="px-4 py-2 text-white rounded-md flex items-center"
+      >
+        <User size={18} className="mr-1" />
+        <span>Minha Conta</span>
+      </Button>
+    </Link>
+              ) : (
+                <>
+<Link href="/login.html">
               <Button
                 color="bg-orange-500"
                 className="px-4 py-2 text-white rounded-md flex items-center"
@@ -105,6 +118,10 @@ const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
                 <span>Registrar</span>
               </Button>
             </Link>
+             </>
+              )
+            }
+            
            <Link
            href="/carrinho.html"
            >
@@ -139,7 +156,20 @@ const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
             
             {/* Botões para mobile */}
             <div className="flex flex-col space-y-2">
-              <Link href="/login.html" className="w-full">
+              { token ?(
+
+<Link href="/minha-conta.html">
+      <Button
+        color="bg-black"
+        className="px-4 py-2 text-white rounded-md flex items-center"
+      >
+        <User size={18} className="mr-1" />
+        <span>Minha Conta</span>
+      </Button>
+    </Link>
+              ) : (
+                  <>
+                <Link href="/login.html" className="w-full">
                 <Button
                   color="bg-orange-500"
                   className="w-full px-4 py-2 text-white rounded-md flex items-center justify-center"
@@ -158,6 +188,10 @@ const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
                   <span>Registrar</span>
                 </Button>
               </Link>
+                  </>
+                )
+              }
+             
               <Link
               href="/carrinho.html"
               >

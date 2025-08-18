@@ -1,23 +1,48 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../componentes/Sidebar';
 import { OverviewSection, OrdersSection, ProductsSection , ReportsSection, AddProductNew } from '../componentes/Sidebar';
+import { useRouter } from 'next/router';
 
+interface UserData {
+  info: {
+    tipo: string;
+  };
+}
 
 export default function Dashboard() {
-   const dadosUsuario = JSON.parse(localStorage.getItem('user') || '{}');
+  
+const router = useRouter();
+   const [token, setToken] = useState<string | null>(null);
+    const [dadosUsuario, setDadosUsuario] = useState<UserData | null>(null);
+  useEffect(() => {
+    // Este código só será executado no navegador, após o componente ser montado
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      setToken(storedToken);
+    }
+  }, []);
 
-
-const token = localStorage.getItem('token');
-console.log(token);
-
-
-if(token === "" || !token){
-   window.location.href = "/login";
-}
-if(dadosUsuario.info.tipo !== "admin"){
-  window.location.href = "/";
-}
+  
+ 
+  useEffect(() => {
+    // Este código só roda no navegador
+    const storedDadoUsuario = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // Verifica se os dados do usuário existem e têm a estrutura esperada
+    if (storedDadoUsuario && storedDadoUsuario.info) {
+      setDadosUsuario(storedDadoUsuario);
+      
+      // A lógica de verificação e redirecionamento agora está aqui,
+      // rodando apenas após os dados serem carregados no estado
+      if (storedDadoUsuario.info.tipo !== 'admin') {
+        router.push('/');
+      }
+    } else {
+      // Se não houver dados, redireciona para a página inicial
+      router.push('/');
+    }
+  }, [router]);
   // Estado para controlar qual seção está ativa
   const [activeSection, setActiveSection] = useState('overview');
 
