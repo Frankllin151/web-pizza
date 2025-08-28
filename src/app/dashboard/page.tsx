@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../componentes/Sidebar';
 import { OverviewSection, OrdersSection, ProductsSection , ReportsSection, AddProductNew } from '../componentes/Sidebar';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface UserData {
   info: {
@@ -11,38 +11,40 @@ interface UserData {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   
-const router = useRouter();
-   const [token, setToken] = useState<string | null>(null);
-    const [dadosUsuario, setDadosUsuario] = useState<UserData | null>(null);
-  useEffect(() => {
-    // Este código só será executado no navegador, após o componente ser montado
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-    }
-  }, []);
-
-  
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+  const [dadosUsuario, setDadosUsuario] = useState<UserData | null>(null);
+ console.log(dadosUsuario);
  
   useEffect(() => {
-    // Este código só roda no navegador
-    const storedDadoUsuario = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    // Verifica se os dados do usuário existem e têm a estrutura esperada
-    if (storedDadoUsuario && storedDadoUsuario.info) {
-      setDadosUsuario(storedDadoUsuario);
-      
-      // A lógica de verificação e redirecionamento agora está aqui,
-      // rodando apenas após os dados serem carregados no estado
-      if (storedDadoUsuario.info.tipo !== 'admin') {
-        router.push('/');
-      }
-    } else {
-      // Se não houver dados, redireciona para a página inicial
-      router.push('/');
+    // 1. Pega o token do localStorage
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) {
+      // Se não houver token, redireciona para a página de login
+      router.push('/login.html');
+      return; // Importante: para a execução
     }
+    
+    // 2. Pega os dados do usuário do localStorage
+    const storedDadoUsuario = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!storedDadoUsuario || storedDadoUsuario.info.tipo !== 'admin') {
+      // Se não houver dados ou o usuário não for admin, redireciona para a home
+      router.push('/login.html');
+      return; // Importante: para a execução
+    }
+ 
+
+    // 3. Se tudo estiver correto, atualiza os estados e para o loading
+    setToken(storedToken);
+    setDadosUsuario(storedDadoUsuario);
+    setLoading(false);
+    
   }, [router]);
+ 
+  // Enquanto a verificação não estiver completa, exibe uma mensagem de carregamento
+
   // Estado para controlar qual seção está ativa
   const [activeSection, setActiveSection] = useState('overview');
 

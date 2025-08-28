@@ -6,6 +6,24 @@ import Link from 'next/link';
 import Button from '../componentes/Button';
 import { useRouter } from 'next/navigation';
 // Interfaces para tipagem
+interface UserData {
+  info: {
+    id: string;
+    nome: string;
+    email: string;
+    tipo: string;
+  };
+  dados?: {
+    cpf: string;
+    telefone: string;
+    rua_avenida: string;
+    numero: string;
+    complemento: string;
+    bairro: string;
+    cidade: string;
+  };
+}
+ 
 interface Usuario {
   nome: string;
   email: string;
@@ -17,139 +35,132 @@ interface Usuario {
   bairro: string;
   cidade: string;
 }
-
+ 
 interface Pedido {
   id: string;
   data: string;
   status: string;
-  itens: ItemCarrinho[];
+  itens: any[]; // Substitua por uma interface ItemCarrinho se tiver
   total: number;
 }
 
 export default function MinhaConta() {
-  const dadosUsuario = JSON.parse(localStorage.getItem('user') || '{}');
-
-  const router = useRouter();
-  
+const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  
+  const [usuario, setUsuario] = useState<Usuario>({
+    nome: "", email: "", cpf: "", telefone: "", endereco: "", numero: "",
+    complemento: "", bairro: "", cidade: ""
+  });
+  
+  const [editando, setEditando] = useState<boolean>(false);
+  const [dadosEditados, setDadosEditados] = useState<Usuario>({ ...usuario });
+  
+  const [historicoPedidos, setHistoricoPedidos] = useState<Pedido[]>([]);
+  const [abaAtiva, setAbaAtiva] = useState<'dados' | 'pedidos'>('dados');
+  
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
  
   useEffect(() => {
-    // Este código só roda no navegador, após o componente ser montado
     const storedToken = localStorage.getItem('token');
-    
-    // 1. Verifica se o token existe
     if (!storedToken) {
-      // Se não houver token, redireciona para a página de login
-      router.push('/');
-    } else {
-      // 2. Se o token existir, armazena no estado e para o loading
-      setToken(storedToken);
-      setLoading(false);
-    }
-    
-  }, [router]);
-
-const handleLogout = () => {
-  // Remove o item "token" do localStorage
-  localStorage.removeItem("token");
-  
-  // Opcional: Redireciona o usuário para a página de login ou para a página inicial
-  window.location.href = "/login.html"; 
-};
-
-  // Estados para os dados do usuário
-  const [usuario, setUsuario] = useState<Usuario>({
-    nome: dadosUsuario.info.nome ??  "",
-    email: dadosUsuario.info.email ??  "",
-    cpf: dadosUsuario?.dados?.cpf ?? "",
-  telefone: dadosUsuario?.dados?.telefone ?? "",
-  endereco: dadosUsuario?.dados?.rua_avenida ?? "",
-  numero: dadosUsuario?.dados?.numero ?? "",
-  complemento: dadosUsuario?.dados?.complemento ?? "",
-  bairro: dadosUsuario?.dados?.bairro ?? "",
-  cidade: dadosUsuario?.dados?.cidade ?? ""
-  });
-
-  // Estado para edição dos dados
-  const [editando, setEditando] = useState<boolean>(false);
-  const [dadosEditados, setDadosEditados] = useState<Usuario>({...usuario});
-  
-  // Estado para histórico de pedidos
-  const [historicoPedidos, setHistoricoPedidos] = useState<Pedido[]>([]);
-  
-  // Estado para abas (dados pessoais, pedidos)
-  const [abaAtiva, setAbaAtiva] = useState<'dados' | 'pedidos'>('dados');
-
-  // Carregar dados do usuário e histórico de pedidos
-  useEffect(() => {
-    // Simular carregamento de dados do usuário do localStorage ou de uma API
-    const dadosUsuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    if (dadosUsuario && Object.keys(dadosUsuario).length > 0) {
-      setUsuario(dadosUsuario);
-      setDadosEditados(dadosUsuario);
-    }
-
-    // Simular carregamento do histórico de pedidos
-    const historicoPedidosSalvo = JSON.parse(localStorage.getItem('historicoPedidos') || '[]');
-    setHistoricoPedidos(historicoPedidosSalvo);
-  }, []);
-
-  // Salvar alterações nos dados do usuário
-const salvarAlteracoes = async () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  // Montar o body conforme o backend espera
-  const body = {
-    user_id: dadosUsuario.info.id,
-    nome_completo: dadosEditados.nome,
-    email: dadosEditados.email,
-    cpf: dadosEditados.cpf,
-    telefone: dadosEditados.telefone,
-    rua_avenida: dadosEditados.endereco,
-    numero: dadosEditados.numero,
-    complemento: dadosEditados.complemento,
-    bairro: dadosEditados.bairro,
-    cidade: dadosEditados.cidade,
-  };
-console.log(body);
-
-  try {
-    const response = await fetch(`${apiUrl}/api/dashboard/atualizar-dados`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      console.log(response);
-      
-      alert("Erro ao atualizar dados!");
+      router.push('/login.html');
       return;
     }
-
-    // Atualiza o estado local e exibe sucesso
-    setUsuario({ ...dadosEditados });
-    setEditando(false);
-    alert("Dados atualizados com sucesso!");
-    console.log(response);
+ 
+    const storedDadoUsuario: UserData = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!storedDadoUsuario || !storedDadoUsuario.info) {
+      router.push('/login.html');
+      return;
+    }
+ 
+    setToken(storedToken);
     
-  } catch (error) {
-    alert("Erro ao conectar com o servidor!");
-    console.error(error);
-  }
-};
+    // **AQUI ESTÁ A CORREÇÃO PRINCIPAL**
+    // Criamos um objeto inicial com os dados do localStorage
+    const dadosIniciais: Usuario = {
+      nome: storedDadoUsuario.info.nome ?? "",
+      email: storedDadoUsuario.info.email ?? "",
+      cpf: storedDadoUsuario.dados?.cpf ?? "",
+      telefone: storedDadoUsuario.dados?.telefone ?? "",
+      endereco: storedDadoUsuario.dados?.rua_avenida ?? "",
+      numero: storedDadoUsuario.dados?.numero ?? "",
+      complemento: storedDadoUsuario.dados?.complemento ?? "",
+      bairro: storedDadoUsuario.dados?.bairro ?? "",
+      cidade: storedDadoUsuario.dados?.cidade ?? ""
+    };
+ 
+    // Usamos esse objeto para preencher ambos os estados
+    setUsuario(dadosIniciais);
+    setDadosEditados(dadosIniciais);
+ 
+    // Carrega dados adicionais
+    const historicoPedidosSalvo = JSON.parse(localStorage.getItem('historicoPedidos') || '[]');
+    setHistoricoPedidos(historicoPedidosSalvo);
+ 
+    setLoading(false);
+  }, [router]);
+  
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login.html");
+  };
+ 
+  const salvarAlteracoes = async () => {
+    const dadosUsuarioBruto: UserData = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!dadosUsuarioBruto || !dadosUsuarioBruto.info) {
+      alert("Erro: Dados de usuário não encontrados.");
+      return;
+    }
+ 
+    const body = {
+      user_id: dadosUsuarioBruto.info.id,
+      nome_completo: dadosEditados.nome,
+      email: dadosEditados.email,
+      cpf: dadosEditados.cpf,
+      telefone: dadosEditados.telefone,
+      rua_avenida: dadosEditados.endereco,
+      numero: dadosEditados.numero,
+      complemento: dadosEditados.complemento,
+      bairro: dadosEditados.bairro,
+      cidade: dadosEditados.cidade,
+    };
+ 
+    try {
+      const cleanToken = token ? token.replace(/"/g, '') : '';
+      const response = await fetch(`${apiUrl}/api/dashboard/atualizar-dados`, {
 
-  // Cancelar edição
+
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${cleanToken
+            
+          }`,
+        },
+        body: JSON.stringify(body),
+      });
+ 
+      if (!response.ok) {
+        alert("Erro ao atualizar dados!");
+        return;
+      }
+ 
+      setUsuario({ ...dadosEditados });
+      setEditando(false);
+      alert("Dados atualizados com sucesso!");
+    } catch (error) {
+      alert("Erro ao conectar com o servidor!");
+    }
+  };
+ 
   const cancelarEdicao = () => {
-    setDadosEditados({...usuario});
+    setDadosEditados({ ...usuario });
     setEditando(false);
   };
-
-  // Manipular alterações nos campos de entrada
+ 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setDadosEditados(prev => ({
@@ -157,19 +168,19 @@ console.log(body);
       [name]: value
     }));
   };
-
-  // Formatação de CPF: XXX.XXX.XXX-XX
+ 
   const formatarCPF = (cpf: string) => {
     if (!cpf) return '';
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
-
-  // Formatação de telefone: (XX) XXXXX-XXXX
+ 
   const formatarTelefone = (telefone: string) => {
     if (!telefone) return '';
     return telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
 
+
+  
   return (
     <>
     <Header/>
