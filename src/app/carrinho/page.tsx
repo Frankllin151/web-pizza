@@ -164,20 +164,19 @@ if(metodoPagamento === "dinheiro"){
 
 
 
- 
-  useEffect(() => {
-    if (etapaAtual === 3 && !scrollAplicado) {
-      // Delay pequeno para garantir que a página esteja pronta pra scroll
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setScrollAplicado(true);
-      }, 100);
-    }
-  }, [etapaAtual, scrollAplicado]);
+ useEffect(() => {
+  if (typeof window !== "undefined" && etapaAtual === 3 && !scrollAplicado) {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setScrollAplicado(true);
+    }, 100);
+  }
+}, [etapaAtual, scrollAplicado]);
 
  
   // Carregar itens do carrinho ao montar o componente
   useEffect(() => {
+  if (typeof window !== "undefined") {
     const carregarCarrinho = () => {
       const carrinhoSalvo: ItemCarrinho[] = JSON.parse(localStorage.getItem('carrinho') || '[]');
       setItens(carrinhoSalvo);
@@ -196,12 +195,21 @@ if(metodoPagamento === "dinheiro"){
       }
     };
 
-    window.addEventListener('carrinhoAtualizado', handleCarrinhoAtualizado);
+
+if (typeof window !== "undefined"){
+  window.addEventListener('carrinhoAtualizado', handleCarrinhoAtualizado);
+}
+
+  
     // Limpar listener
     return () => {
-      window.removeEventListener('carrinhoAtualizado', handleCarrinhoAtualizado);
+      if (typeof window !== "undefined") {
+   window.removeEventListener('carrinhoAtualizado', handleCarrinhoAtualizado);
+      }
+   
     };
-  }, []);
+  }
+}, []);
 
   // Calcular o total do carrinho
   const calcularTotal = (itensCarrinho: ItemCarrinho[]): void => {

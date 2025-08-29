@@ -9,33 +9,40 @@ export default function Carrinho() {
 
   // Carregar itens do carrinho ao montar o componente
   useEffect(() => {
-    const carregarCarrinho = () => {
-      const carrinhoSalvo: ItemCarrinho[] = JSON.parse(localStorage.getItem('carrinho') || '[]');
-      setItens(carrinhoSalvo);
-      calcularTotal(carrinhoSalvo);
-      console.log("Carrinho carregado:", carrinhoSalvo);
-    };
+  if (typeof window !== "undefined") {
+    
+  } // Só executa no cliente
+
+  const carregarCarrinho = () => {
+    const carrinhoSalvo: ItemCarrinho[] = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    setItens(carrinhoSalvo);
+    calcularTotal(carrinhoSalvo);
+    console.log("Carrinho carregado:", carrinhoSalvo);
+  };
+
+  carregarCarrinho();
+
+  const handleCarrinhoAtualizado = (e: CustomEvent<{ carrinho: ItemCarrinho[] }>) => {
+    if (e.detail && e.detail.carrinho) {
+      setItens(e.detail.carrinho);
+      calcularTotal(e.detail.carrinho);
+      console.log("Carrinho atualizado:", e.detail.carrinho);
+    }
+  };
+
+   if(typeof window !== "undefined") {
+  window.addEventListener('carrinhoAtualizado', handleCarrinhoAtualizado as EventListener);
+   }
 
 
-    // Carregar inicialmente
-    carregarCarrinho();
+  return () => {
+    if(typeof window !== "undefined") {
 
-    // Adicionar listener para atualizações do carrinho
-    const handleCarrinhoAtualizado = (e: CustomEvent<{ carrinho: ItemCarrinho[] }>) => {
-      if (e.detail && e.detail.carrinho) {
-        setItens(e.detail.carrinho);
-        calcularTotal(e.detail.carrinho);
-        console.log("Carrinho atualizado:", e.detail.carrinho);
-      }
-    };
-
-    window.addEventListener('carrinhoAtualizado', handleCarrinhoAtualizado as EventListener);
-
-    // Limpar listener
-    return () => {
-      window.removeEventListener('carrinhoAtualizado', handleCarrinhoAtualizado as EventListener);
-    };
-  }, []);
+ window.removeEventListener('carrinhoAtualizado', handleCarrinhoAtualizado as EventListener);
+    }
+   
+  };
+}, []);
 
   // Calcular o total do carrinho
   const calcularTotal = (itensCarrinho: ItemCarrinho[]): void => {
@@ -49,7 +56,10 @@ export default function Carrinho() {
     const novosItens = [...itens];
     novosItens.splice(index, 1);
     setItens(novosItens);
-    localStorage.setItem('carrinho', JSON.stringify(novosItens));
+      if (typeof window !== "undefined") {
+ localStorage.setItem('carrinho', JSON.stringify(novosItens));
+      }
+   
     calcularTotal(novosItens);
 
     // Disparar evento para atualizar outros componentes
@@ -67,6 +77,7 @@ export default function Carrinho() {
     novosItens[index].preco = precoUnitario * novaQuantidade; // Recalcular o preço total com base na nova quantidade
   
     setItens(novosItens);
+     if (typeof window === "undefined") return;
     localStorage.setItem('carrinho', JSON.stringify(novosItens));
     calcularTotal(novosItens);
   

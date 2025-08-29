@@ -13,7 +13,7 @@ export default function Header({ onFiltroChange }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 const [filtro ,  SetFiltro] = useState("");
-const token = JSON.parse(localStorage.getItem("token") || '""');
+const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
 const handleFiltro = (e: React.ChangeEvent<HTMLInputElement>) => {
   if (onFiltroChange) {
