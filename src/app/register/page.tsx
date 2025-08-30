@@ -5,9 +5,11 @@ import InputLabel from "../componentes/InputLabel";
 import TextInput from "../componentes/TextInput";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { registerSchema, RegisterFormInputs } from "../type/RegisterFormInputs";
 
 export default function RegisterPage() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
@@ -16,8 +18,33 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterFormInputs) => {
-    console.log("Dados enviados:", data);
+  const onSubmit = async (data: RegisterFormInputs) => {
+    try{
+      const response = await fetch(`${apiUrl}/api/create-users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Erro ao registrar:", errorData);
+        alert(`Erro ao registrar: ${errorData.message || 'Erro desconhecido'}`);
+        return;
+      }
+
+      const responseData = await response.json();
+      console.log("Registro bem-sucedido:", responseData);
+      alert("Registro bem-sucedido! Por favor, faça login.");
+      // Redirecionar para a página de login
+      window.location.href = "/login.html";
+    }
+    catch (error) {
+    console.error("Erro ao registrar:", error);
+    // Aqui você pode mostrar mensagem de erro para o usuário
+  }
   };
 
   return (
@@ -90,12 +117,12 @@ export default function RegisterPage() {
         {/* Botões de Login com Google e Facebook */}
         <div className="flex justify-center">
           <div className="space-y-2">
-            <Button className={""} color="bg-[#DB4437]">
-              Google
+           <Link href="/login.html">
+            <Button className={""} color="bg-[#1A1A1D]">
+              Faça login
             </Button>
-            <Button className={"ml-1"} color="bg-[#4267B2]" >
-              Facebook
-            </Button>
+           </Link>
+           
           </div>
         </div>
       </div>

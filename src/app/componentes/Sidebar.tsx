@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState , useEffect} from 'react';
 import Image from 'next/image';
 import   pizzas  from '../data/produtopizza';
 import  {Pedido , pedidos} from '../data/Pedidos';
@@ -83,6 +83,26 @@ import AddPizzaComponent from './AddProductPizza';
   
   // Seção de Produtos
 export  function ProductsSection() {
+
+const [pizzasApi, setPizzasApi] = useState([]);
+  const apiurl = process.env.NEXT_PUBLIC_API_URL;
+
+  useEffect(() => {
+    const fetchPizzas = async () => {
+      try {
+        const response = await fetch(`${apiurl}/api/data-get/produto`);
+        if (!response.ok) throw new Error("Erro ao buscar produtos");
+        const json = await response.json();
+        setPizzasApi(json);
+      } catch (error) {
+        console.error("Erro ao buscar as pizzas:", error);
+      }
+    };
+    fetchPizzas();
+  }, [apiurl]);
+
+
+
     return (
       <div className="space-y-8">
         <header>
@@ -94,9 +114,9 @@ export  function ProductsSection() {
         <div>
           <h2 className="text-xl font-bold mb-4">Catálogo de Pizzas</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pizzas.map((pizza) => (
-              <PizzaCard key={pizza.id} pizza={pizza} />
-            ))}
+            {pizzasApi.map((pizza: any) => (
+            <PizzaCard key={pizza.id} pizza={pizza} />
+          ))}
           </div>
         </div>
       </div>

@@ -50,15 +50,27 @@ class UserApiController extends BaseController
      public function createUsers(Request $request , Response $response)
      {
          $body = $request->getBody();
-         $this->vaLidar($body, $response);
+        $this->validarCampos($body, [
+            "name",
+            "email",
+            "password",
+        ]);
      
          $email = $this->userModel->findByEmail($body["email"]);
      
          if ($email === false) {
-             $body["senha"] = password_hash($body["senha"], PASSWORD_DEFAULT);
+             $body["password"] = password_hash($body["password"], PASSWORD_DEFAULT);
      
              // Cria o usuário e obtém o ID
-             $userId = $this->userModel->create($body);
+             $userId = $this->userModel->create(
+                    [
+                        'nome' => $body['name'],
+                        'email' => $body['email'],
+                        'senha' => $body['password'],
+                        'tipo' => null, // Define o tipo padrão como 'user'
+                        'token' => null
+                    ]
+             );
      
              if ($userId <= 0) {
                return  $response->json([
@@ -164,92 +176,121 @@ public function login(Request $request, Response $response)
         'token' => $token
     ]);
 }
-
 public function forGetPassword(Request $request , Response $response)
 {
- $data = $request->getBody();
+    $data = $request->getBody();
+    $email = $data["email"] ?? null;
 
- $mail = new PHPMailer(true);
- $mail->CharSet = 'UTF-8'; // Define a codificação como UTF-8
-$mail->Encoding = 'base64';
+    // Verifica se o email existe
+    $user = $this->userModel->findByEmail($email);
+    if (!$user) {
+        return $response->json([
+            "error" => "Email não encontrado!"
+        ], 404);
+    }
 
- try{
-  $mail->isSMTP();
-  $mail->Host = $_ENV["HOST_SMTP"]; // ou smtp.gmail.com, etc.
-  $mail->SMTPAuth = true;
-  $mail->Username = $_ENV["USER_NAME_SMTP"];
-  $mail->Password = $_ENV['PASSWORD_SMTP'];
-  $mail->Port = $_ENV["PORT_SMTP"];
+    // Gera um código/token único
+    $codigo = bin2hex(random_bytes(16));
 
-  $mail->setFrom($_ENV["EMAIL_SMTP"] , "Web-pizza");
-  $mail->addAddress($data["email"]);
+    // Salva o código no banco (exemplo: campo 'reset_token' na tabela users)
+   $this->userModel->update((int) $user['id'], [
+        'reset_token' => $codigo,
+        'reset_token_expira' => date('Y-m-d H:i:s', strtotime('+24 hours'))
+    ]);
 
-  $mail->isHTML(true); // ⚠️ ATIVAR HTML
-  $mail->Subject = 'Esquece minha senha Web-pizza';
-  
-  $mail->Body = file_get_contents(APP_ROOT . "/app/Views/email/forget.html");
-  
-  $mail->AltBody = 'Este é o conteúdo alternativo para e-mail que não suportam HTML.';
+    // Carrega o template e insere o código
+    $emailBody = file_get_contents(APP_ROOT . "/app/Views/email/forget.php");
+    $emailBody = str_replace('[LINK_REDEFINIÇÃO]', "http://localhost:3000/update-senha?token=$codigo", $emailBody);
+    $emailBody = str_replace('<?php $codigo; ?>', $codigo, $emailBody);
 
-  $mail->send();
-  $response->json([
-    "success" => "Verificar na caixa do seu email"
-  ]);
- } catch (Exception $e){
-  $response->json([
-    "error" => 'Email não enviado!' . $e],  401);
- }
+    $mail = new PHPMailer(true);
+    $mail->CharSet = 'UTF-8';
+    $mail->Encoding = 'base64';
 
+    try {
+        $mail->isSMTP();
+        $mail->Host = $_ENV["HOST_SMTP"];
+        $mail->SMTPAuth = true;
+        $mail->Username = $_ENV["USER_NAME_SMTP"];
+        $mail->Password = $_ENV['PASSWORD_SMTP'];
+        $mail->Port = $_ENV["PORT_SMTP"];
+
+        $mail->setFrom($_ENV["EMAIL_SMTP"], "Web-pizza");
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = '-';
+        $mail->Body = $emailBody;
+        $mail->AltBody = 'Este é o conteúdo alternativo para e-mail que não suportam HTML.';
+
+        $mail->send();
+        return $response->json([
+            "success" => "Verifique na caixa do seu email"
+        ]);
+    } catch (Exception $e) {
+        return $response->json([
+            "error" => 'Email não enviado! ' . $e->getMessage()
+        ], 401);
+    }
 }
 
 public function updatePass(Request $request , Response $response)
 {
-  $data = $request->getBody();
-  $senha =$data["senha"] ?? null;  
-  $confirmSenha = $data["confirm_senha"]  ?? null;
-  $email = $data["email"];
-  
-  if($senha === null ||  $confirmSenha === null || $email === null){
-    return $response->json([
-     "success" => false, 
-     "message" => "Campos senha e Confirma senha são obrigatório"
+    $data = $request->getBody();
+    $senha = $data["senha"] ?? null;  
+    $confirmSenha = $data["confirm_senha"] ?? null;
+    $resetToken = $data["reset_token"] ?? null;
+
+    if ($senha === null || $confirmSenha === null || $resetToken === null) {
+        return $response->json([
+            "success" => false, 
+            "message" => "Campos senha, confirma senha e reset_token são obrigatórios"
+        ]);
+    }
+
+    if ($senha === "" || $confirmSenha === "" || $resetToken === "") {
+        return $response->json([
+            "success" => false, 
+            "message" => "Campos senha, confirma senha e reset_token são obrigatórios"
+        ]);
+    }
+
+    if ($senha !== $confirmSenha) {
+        return $response->json([
+            "success" => false, 
+            "message"=> "As senhas não coincidem"
+        ]);
+    }
+
+    // Busca usuário pelo reset_token
+    $arrayUser = $this->userModel->findWhere('reset_token = :token', [':token' => $resetToken]);
+    if (!$arrayUser || empty($arrayUser)) {
+        return $response->json([
+            "success" => false, 
+            "message_error" => "Token inválido ou expirado"
+        ]);
+    }
+
+    // Verifica se o token está expirado
+    $expira = $arrayUser[0]['reset_token_expira'] ?? null;
+    if (!$expira || strtotime($expira) < time()) {
+        return $response->json([
+            "success" => false, 
+            "message_error" => "Token expirado"
+        ]);
+    }
+
+    // Atualiza a senha e remove o token
+    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+    $this->userModel->update($arrayUser[0]['id'], [
+        'senha' => $senhaHash,
+        'reset_token' => null,
+        'reset_token_expira' => null
     ]);
-  
-  }
 
-  if($senha === "" ||  $confirmSenha === "" || $email === ""){
     return $response->json([
-     "success" => false, 
-     "message" => "Campos senha e Confirma senha são obrigatório"
-    ]);
-  
-  }
-
-  if($senha !== $confirmSenha){
-    return $response->json([
-      "success" => false , 
-      "message"=> "As senhas não coincidem"
-    ]);
- 
-  }
-
-
-  $arrayUser =$this->userModel->findUser($email);
-  if($arrayUser === false || empty($arrayUser)){
-   $response->json([
-    "success" => false , 
-    "message_error" => "Esse email não existe"
-   ]);
-  
-  }
-
-  $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
-  $this->userModel->update($arrayUser[0]['id'], ['senha' =>  $senhaHash]);
-
-
-  $response->json([
-    "success" => true, 
-    "message" => "Senha alterada"
+        "success" => true, 
+        "message" => "Senha alterada"
     ]);
 }
 

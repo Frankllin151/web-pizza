@@ -83,7 +83,7 @@
             <p>Para redefinir sua senha, clique no botão abaixo:</p>
             
             <div style="text-align: center;">
-                <a href="[LINK_REDEFINIÇÃO]" class="button">Redefinir Minha Senha</a>
+                <a href="http://localhost:3000/update-senha?token=<?php $codigo; ?>" class="button">Redefinir Minha Senha</a>
             </div>
             
             <div class="info">

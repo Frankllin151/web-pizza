@@ -24,7 +24,7 @@ $router->get("/api/data-get/produto", [ProdutoPizzaController::class, "selectAll
 // criar usuário
 $router->post("/api/create-users" ,[UserApiController::class , "createUsers"]);
 // esqueci minha senha -> email caixa
-$router->post("/api/forget-passwod", [UserApiController::class, "forGetPassword"]);
+$router->post("/api/forget-password", [UserApiController::class, "forGetPassword"]);
 $router->post("/api/update-senha", [UserApiController::class, "updatePass"]);
 // login
 $router->post("/api/login" , [UserApiController::class, "login"]);
@@ -35,7 +35,7 @@ $router->middleware("AdminUserMiddleware")->post("/api/dashboard/adicionar-pizza
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/editar-pizza", [ProdutoPizzaController::class, "editarPizza"]);
 $router->middleware("AdminUserMiddleware")->post("/api/dashboard/deletar-pizza", [ProdutoPizzaController::class, "deletarPizza"]);
 
-// atulizar dados pelo routa protegida (senha,dados entrega e pessoal)
+// atulizar dados pelo routa protegida (senha,dados entrega e pessoa)
 $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-senha",[UserApiController::class, "atualizarSenha"]);
 $router->middleware("AuthMiddleware")->post("/api/dashboard/atualizar-dados", [UserApiController::class, "updateDados"]);
 

@@ -9,8 +9,10 @@ class User extends BaseModel {
     "email", 
     "senha",
      "tipo" ,
-    "token"
-     ,'created_at', 
+    "token", 
+    "reset_token", 
+    "reset_token_expira",
+     'created_at', 
     'updated_at'
 ];
 

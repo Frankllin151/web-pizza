@@ -48,7 +48,12 @@ export default function LoginPage() {
        localStorage.setItem("user", JSON.stringify(result.user));
     localStorage.setItem("token", JSON.stringify(result.token));
     // Exemplo: redirecionar para a home após login
- window.location.href = "/minha-conta";
+    if(result.user.info.tipo ==="admin"){
+   window.location.href = "/dashboard";   
+    } else{
+window.location.href = "/minha-conta";
+    }
+// 
     }
 
     

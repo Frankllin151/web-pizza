@@ -5,6 +5,9 @@ import InputLabel from './InputLabel';
 import { PizzaFormData } from '../type/dashboard/PizzaFormData';
 import { AddPizzaProps } from '../type/dashboard/AddPizzaProps';
 
+
+
+
 const AddPizzaComponent: React.FC<AddPizzaProps> = ({ onSubmit }) => {
   // Estado inicial do formulário
   const [formData, setFormData] = useState<PizzaFormData>({
@@ -42,25 +45,46 @@ const AddPizzaComponent: React.FC<AddPizzaProps> = ({ onSubmit }) => {
   };
 
   // Manipulador para upload de imagem
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      setFormData({
-        ...formData,
-        image: file
-      });
-      
-      // Criar URL para pré-visualização
-      const fileUrl = URL.createObjectURL(file);
-      setImagePreview(fileUrl);
+
+
+  // Manipulador para submissão do formulário
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Transforma PizzaFormData para o formato da API
+  const pizzaApiData = {
+    nome: formData.name,
+    imagem: imagePreview, // ou formData.image se for upload
+    descricao: formData.description,
+    tamanhos: {
+      p: formData.sizes.find(s => s.size === 'P')?.price || 0,
+      m: formData.sizes.find(s => s.size === 'M')?.price || 0,
+      g: formData.sizes.find(s => s.size === 'G')?.price || 0,
+      gg: formData.sizes.find(s => s.size === 'GG')?.price || 0,
     }
   };
 
-  // Manipulador para submissão do formulário
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
+  try {
+    const apiurl = process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(`${apiurl}/api/dashboard/adicionar-pizza`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pizzaApiData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      alert(`Erro ao adicionar pizza: ${errorData.message || 'Erro desconhecido'}`);
+      return;
+    }
+
+    alert("Pizza adicionada com sucesso!");
+    // Se quiser, pode limpar o formulário ou atualizar a lista de pizzas aqui
+  } catch (error) {
+    alert("Erro ao adicionar pizza!");
+    console.error(error);
+  }
+};
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-[0_4px_7px_-1px_rgba(0,0,0,0.11),0_2px_4px_-1px_rgba(0,0,0,0.07)]">
@@ -125,37 +149,7 @@ const AddPizzaComponent: React.FC<AddPizzaProps> = ({ onSubmit }) => {
         </div>
 
         {/* Upload de Imagem */}
-        <div className="mb-6">
-          <InputLabel htmlFor="image">Imagem da Pizza (opcional)</InputLabel>
-          <div className="flex items-start mt-2">
-            <div className="w-24 h-24 rounded-lg overflow-hidden mr-4 bg-gray-100">
-              <img 
-                src={imagePreview} 
-                alt="Pré-visualização da pizza" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1">
-              <input
-                type="file"
-                name="image"
-                id="image"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <label 
-                htmlFor="image" 
-                className="inline-block px-4 py-2 cursor-pointer text-white bg-[#F97316] rounded-lg font-medium shadow-[0_4px_7px_-1px_rgba(0,0,0,0.11),0_2px_4px_-1px_rgba(0,0,0,0.07)]"
-              >
-                Escolher Imagem
-              </label>
-              <p className="mt-1 text-sm text-gray-500">
-                {formData.image ? formData.image.name : 'Nenhuma imagem selecionada (será usada imagem padrão)'}
-              </p>
-            </div>
-          </div>
-        </div>
+      
 
         {/* Botões de Ação */}
         <div className="flex justify-end gap-3">
